@@ -140,8 +140,9 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   sendChatMessage: (text) => {
     const msgId = `msg-${Date.now()}`;
     const loadingId = `sys-${Date.now()}`;
+    const { incident } = get();
 
-    // Push user message
+    // Push user message + loading bubble
     set(state => ({
       chatMessages: [
         ...state.chatMessages,
@@ -150,19 +151,47 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
       ]
     }));
 
-    // Log to timeline
     get()._addTimelineEvent('chat', `Operator query: "${text.substring(0, 60)}"`);
 
-    // Simulate async LLM response
-    setTimeout(() => {
-      const incident = get().incident;
-      const response = buildChatResponse(text, incident);
-      set(state => ({
-        chatMessages: state.chatMessages.map(m =>
-          m.id === loadingId ? { ...m, text: response, isLoading: false, timestamp: ts() } : m
-        )
-      }));
-    }, 700);
+    // Build short recent history for context (last 4 exchange pairs)
+    const recentMessages = get().chatMessages.slice(-8).map(m => ({
+      role: m.sender as 'user' | 'system',
+      text: m.text,
+    }));
+
+    // Call backend /api/chat with full incident context
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: text,
+        incidentLat: incident.location.lat,
+        incidentLng: incident.location.lng,
+        incidentRoad: incident.location.desc ?? '',
+        recentMessages,
+      }),
+    })
+      .then(res => res.json())
+      .then((data: { success: boolean; answer?: string; error?: string }) => {
+        const answer = data.success && data.answer
+          ? data.answer
+          : (data.error ?? buildChatResponse(text, get().incident)); // offline fallback
+
+        set(state => ({
+          chatMessages: state.chatMessages.map(m =>
+            m.id === loadingId ? { ...m, text: answer, isLoading: false, timestamp: ts() } : m
+          )
+        }));
+      })
+      .catch(() => {
+        // Network down — use local fallback so UI is never stuck
+        const fallback = buildChatResponse(text, get().incident);
+        set(state => ({
+          chatMessages: state.chatMessages.map(m =>
+            m.id === loadingId ? { ...m, text: fallback, isLoading: false, timestamp: ts() } : m
+          )
+        }));
+      });
   },
 
   // ── Alert Publishing ─────────────────────────
