@@ -10,6 +10,7 @@ import AlertsGenerator from '@/components/actions/AlertsGenerator';
 import OperationLog from '@/components/dashboard/OperationLog';
 import SimControls from '@/components/dashboard/SimControls';
 import LiveClock from '@/components/dashboard/LiveClock';
+import NavbarNotifications from '@/components/dashboard/NavbarNotifications';
 import {
   LayoutDashboard, Map as MapIcon, ShieldAlert,
   Bell, UserCircle, MessageSquare, Radio, Clock,
@@ -159,10 +160,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-6 shrink-0">
             <LiveClock />
             <SimControls />
-            <button className="relative text-slate-500 hover:text-slate-800 transition-colors">
-              <Bell size={24} />
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-sm" />
-            </button>
+            <NavbarNotifications />
           </div>
         </header>
 
