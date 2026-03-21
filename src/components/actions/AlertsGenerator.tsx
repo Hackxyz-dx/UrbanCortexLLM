@@ -17,8 +17,8 @@ export default function AlertsGenerator() {
 
   const renderPublishBadge = (published: boolean) =>
     published ? (
-      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-        <CheckCircle2 size={12} /> Published
+      <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+        <CheckCircle2 size={14} /> Published
       </span>
     ) : null;
 
@@ -41,66 +41,66 @@ export default function AlertsGenerator() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full">
           {/* Tabs Header with unified publish button */}
           <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-2 shrink-0">
-            <TabsList className="bg-transparent border-none justify-start h-12 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
+            <TabsList className="bg-transparent border-none justify-start h-14 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
               <TabsTrigger
                 value="vms"
-                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
               >
                 VMS Panel
-                {incident.alerts.vmsPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+                {incident.alerts.vmsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
               <TabsTrigger
                 value="social"
-                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
               >
                 Social
-                {incident.alerts.socialPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+                {incident.alerts.socialPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
               <TabsTrigger
                 value="sms"
-                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
               >
                 SMS
-                {incident.alerts.smsPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+                {incident.alerts.smsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex items-center gap-3 pr-2 shrink-0">
+            <div className="flex items-center gap-3 pr-3 shrink-0">
               {renderPublishBadge(isCurrentPublished())}
               <Button
                 size="sm"
                 disabled={isCurrentPublished()}
                 onClick={handlePublish}
-                className="h-8 text-[11px] bg-white hover:bg-slate-100 text-slate-700 hover:text-blue-700 font-bold uppercase tracking-wider px-4 py-0 rounded border border-slate-300 transition-colors disabled:opacity-50 shadow-sm"
+                className="h-9 text-xs bg-white hover:bg-slate-100 text-slate-700 hover:text-blue-700 font-bold uppercase tracking-wider px-5 py-0 rounded border border-slate-300 transition-colors disabled:opacity-50 shadow-sm"
               >
-                <Send size={12} className="mr-1.5" />
+                <Send size={14} className="mr-2" />
                 {isCurrentPublished() ? 'Sent' : 'Publish'}
               </Button>
             </div>
           </div>
 
-          <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-5 bg-white overflow-y-auto">
-            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-5 rounded-md w-full shadow-sm">
-              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 block border-b border-slate-200 pb-2">
+          <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-6 bg-white overflow-y-auto">
+            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-6 rounded-md w-full shadow-sm">
+              <span className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 block border-b border-slate-200 pb-3">
                 Hardware Preview: VMS Board GJ-27 (PDEU Campus Junction)
               </span>
-              <pre className={`font-mono text-center leading-[1.8] text-sm md:text-base font-bold bg-[#1a1a1a] w-full py-8 px-4 rounded-sm border-2 tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors shadow-inner ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>
+              <pre className={`font-mono text-center leading-[1.8] text-base md:text-lg font-bold bg-[#1a1a1a] w-full py-10 px-5 rounded border-2 tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors shadow-inner ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>
                 {vmsDraft}
               </pre>
             </div>
           </TabsContent>
 
-          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-5 bg-white">
+          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-6 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-base resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={socialDraft}
               readOnly={incident.alerts.socialPublished}
             />
           </TabsContent>
 
-          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-5 bg-white">
+          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-6 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-base resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={smsDraft}
               readOnly={incident.alerts.smsPublished}
             />

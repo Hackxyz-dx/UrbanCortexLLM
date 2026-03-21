@@ -34,21 +34,21 @@ export default function CopilotChat() {
     <div className="bg-white flex flex-col flex-1 overflow-hidden min-h-[350px]">
       <div className="flex-1 overflow-hidden flex flex-col relative w-full">
         <ScrollArea className="flex-1 w-full" ref={scrollRef}>
-          <div className="flex flex-col p-4 w-full max-w-full overflow-hidden">
+          <div className="flex flex-col p-5 w-full max-w-full overflow-hidden">
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`py-3 flex gap-3 text-sm items-start mb-4 overflow-hidden w-full ${
+                className={`py-3 flex gap-3.5 text-base items-start mb-5 overflow-hidden w-full ${
                   msg.sender === 'user' ? '' : ''
                 }`}
               >
-                <div className={`shrink-0 text-[10px] font-bold tracking-widest uppercase mt-0.5 border px-1.5 py-0.5 rounded ${msg.sender === 'user' ? 'text-slate-500 border-slate-200 bg-slate-50' : 'text-blue-700 border-blue-200 bg-blue-50'}`}>
+                <div className={`shrink-0 text-xs font-bold tracking-widest uppercase mt-1 border px-2 py-0.5 rounded ${msg.sender === 'user' ? 'text-slate-500 border-slate-200 bg-slate-50' : 'text-blue-700 border-blue-200 bg-blue-50'}`}>
                   {msg.sender === 'user' ? 'OPR' : 'SYS'}
                 </div>
                 <div className={`leading-relaxed whitespace-pre-wrap break-words min-w-0 flex-1 pr-2 ${
                   msg.isLoading ? 'text-slate-400 animate-pulse' 
                   : msg.sender === 'user' ? 'text-slate-700 font-medium' 
-                  : 'text-slate-800 font-mono text-[13px] bg-slate-50/50 p-2.5 rounded-md border border-slate-100'
+                  : 'text-slate-800 font-mono text-sm bg-slate-50/50 p-3.5 rounded-lg border border-slate-100'
                 }`}>
                   {msg.text}
                 </div>
@@ -57,13 +57,13 @@ export default function CopilotChat() {
           </div>
         </ScrollArea>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50 w-full shrink-0">
-          <div className="flex flex-wrap gap-2 mb-3 w-full">
+        <div className="p-5 border-t border-slate-100 bg-slate-50 w-full shrink-0">
+          <div className="flex flex-wrap gap-2.5 mb-4 w-full">
             {PREDEFINED_QUERIES.map((q, i) => (
               <button
                 key={i}
                 onClick={() => handleSend(q)}
-                className="text-xs font-medium bg-white hover:bg-slate-100 border border-slate-200 transition-colors text-slate-600 hover:text-slate-800 px-3 py-1.5 rounded-full text-left truncate max-w-full shadow-sm"
+                className="text-sm font-medium bg-white hover:bg-slate-100 border border-slate-200 transition-colors text-slate-600 hover:text-slate-800 px-4 py-2 rounded-full text-left truncate max-w-full shadow-sm"
                 title={q}
               >
                 {q}
@@ -78,14 +78,14 @@ export default function CopilotChat() {
               placeholder="Enter system query..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="h-10 text-sm bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 rounded-md focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 pr-10 shadow-sm"
+              className="h-12 text-base bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 rounded-md focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 pr-12 shadow-sm"
             />
             <Button
               type="submit"
               size="icon"
-              className="h-10 w-10 absolute right-0 top-0 bg-blue-600 hover:bg-blue-700 text-white transition-colors rounded-r-md rounded-l-none border-0 shadow-none"
+              className="h-12 w-12 absolute right-0 top-0 bg-blue-600 hover:bg-blue-700 text-white transition-colors rounded-r-md rounded-l-none border-0 shadow-none"
             >
-              <SendHorizontal size={16} />
+              <SendHorizontal size={18} />
             </Button>
           </form>
         </div>
