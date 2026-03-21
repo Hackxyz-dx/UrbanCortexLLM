@@ -35,6 +35,19 @@ export interface ResponseStrategy {
   status: ActionStatus;
 }
 
+export interface TimelineEvent {
+  id: string;
+  timestamp: string;
+  type: 'incident' | 'recommendation' | 'approval' | 'alert' | 'chat' | 'simulation';
+  message: string;
+}
+
+export interface AlertState {
+  vmsPublished: boolean;
+  socialPublished: boolean;
+  smsPublished: boolean;
+}
+
 export interface IncidentState {
   id: string;
   title: string;
@@ -47,75 +60,95 @@ export interface IncidentState {
   estimatedClearance: number; // minutes
   routes: RouteGeometry[];
   strategies: ResponseStrategy[];
-  recommendations: Recommendation[]; // Kept for legacy compatibility if needed
+  recommendations: Recommendation[];
+  timeline: TimelineEvent[];
+  alerts: AlertState;
+  simulationElapsed: number; // seconds since incident start
 }
 
+const now = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
 export const initialMockIncident: IncidentState = {
-  id: 'INC-2024-089',
-  title: 'Multi-Vehicle Collision on I-95 North',
+  id: 'INC-2026-PDEU-01',
+  title: 'Multi-Vehicle Collision on Koba-Gandhinagar Highway',
   status: 'active',
   severity: 'critical',
-  location: { lat: 39.9526, lng: -75.1652, desc: 'I-95 Northbound at Exit 22' },
+  location: { lat: 23.1565, lng: 72.6659, desc: 'Koba-Gandhinagar Hwy, near PDEU Main Gate, Sector-23' },
   blockedLanes: 3,
   totalLanes: 4,
-  vehiclesInvolved: 4,
-  estimatedClearance: 120, // 2 hours
+  vehiclesInvolved: 5,
+  estimatedClearance: 90,
   routes: [
     {
       id: 'r1',
-      name: 'I-95 N Mainline',
+      name: 'Koba-Gandhinagar Hwy (Incident Mainline)',
       congestionLevel: 'blocked',
       type: 'primary',
       coordinates: [
-        [39.9400, -75.1600],
-        [39.9526, -75.1652],
-        [39.9600, -75.1700],
+        [23.1480, 72.6640],
+        [23.1520, 72.6653],
+        [23.1565, 72.6659],
+        [23.1620, 72.6670],
       ]
     },
     {
       id: 'r2',
-      name: 'Columbus Blvd Diversion',
+      name: 'Sardar Patel Ring Road Diversion',
       congestionLevel: 'moderate',
       type: 'diversion',
       coordinates: [
-        [39.9400, -75.1600],
-        [39.9450, -75.1500],
-        [39.9600, -75.1550],
-        [39.9650, -75.1700],
+        [23.1480, 72.6640],
+        [23.1430, 72.6580],
+        [23.1390, 72.6510],
+        [23.1400, 72.6430],
+        [23.1450, 72.6380],
+        [23.1560, 72.6400],
+        [23.1620, 72.6670],
+      ]
+    },
+    {
+      id: 'r3',
+      name: 'Indroda Circle Emergency Corridor',
+      congestionLevel: 'low',
+      type: 'emergency-corridor',
+      coordinates: [
+        [23.1565, 72.6659],
+        [23.1600, 72.6700],
+        [23.1650, 72.6720],
       ]
     }
   ],
   strategies: [
     {
       id: 'strat-1',
-      name: 'Aggressive Diversion & Retiming',
+      name: 'Ring Road Diversion + Signal Cascade',
       rank: 1,
-      overallConfidence: 0.94,
+      overallConfidence: 0.93,
       status: 'pending',
       metrics: {
-        queueReduction: '-1.4 mi',
-        delayReduction: '-22 mins',
-        secondaryCrashRisk: '-42%',
+        queueReduction: '-2.1 km',
+        delayReduction: '-27 min',
+        secondaryCrashRisk: '-38%',
         complexity: 'Medium'
       },
       actions: [
         {
           id: 'rec-1',
           type: 'diversion',
-          title: 'Activate Columbus Blvd Diversion',
-          description: 'Route all non-essential northbound traffic to Columbus Blvd.',
-          reasoning: 'Columbus Blvd has 40% spare capacity.',
-          expectedImpact: 'Moves 600 vph off I-95 main queue.',
-          confidence: 0.92,
+          title: 'Activate Sardar Patel Ring Road Diversion',
+          description: 'Redirect all non-emergency westbound traffic to Sardar Patel Ring Road via Sector-23 off-ramp.',
+          reasoning: 'Ring Road has 45% spare capacity and bypasses the primary incident zone.',
+          expectedImpact: 'Expected to move ~700 vph away from blocked mainline.',
+          confidence: 0.93,
           status: 'pending'
         },
         {
           id: 'rec-2',
           type: 'signal-timing',
-          title: 'Extend Green Phase on Columbus Blvd',
-          description: 'Increase N-S green timing by +15s at 4 intersections.',
-          reasoning: 'Required to accommodate diversion influx.',
-          expectedImpact: 'Prevents spillback onto local grid.',
+          title: 'Extend Green Phase at Indroda Circle',
+          description: 'Increase N-S signal green phase by +20s at junctions: Indroda Circle, Sector-23 gate, PDEU West entry.',
+          reasoning: 'Accommodates surge in Ring Road traffic without spillback.',
+          expectedImpact: 'Prevents grid-lock at Indroda Circle junction.',
           confidence: 0.88,
           status: 'pending'
         }
@@ -123,29 +156,43 @@ export const initialMockIncident: IncidentState = {
     },
     {
       id: 'strat-2',
-      name: 'Local Reroute (Conservative)',
+      name: 'Soft Reroute via Sector-7 Road',
       rank: 2,
-      overallConfidence: 0.78,
+      overallConfidence: 0.76,
       status: 'pending',
       metrics: {
-        queueReduction: '-0.5 mi',
-        delayReduction: '-8 mins',
-        secondaryCrashRisk: '-15%',
+        queueReduction: '-0.8 km',
+        delayReduction: '-11 min',
+        secondaryCrashRisk: '-12%',
         complexity: 'Low'
       },
       actions: [
         {
           id: 'rec-3',
           type: 'diversion',
-          title: 'Soft Diversion via Broad St',
-          description: 'Divert only commercial freight to Broad St.',
-          reasoning: 'Less disruptive to local grid but lower capacity.',
-          expectedImpact: 'Reduces heavy-vehicle braking accidents.',
-          confidence: 0.85,
+          title: 'Soft Diversion via Sector-7 Internal Road',
+          description: 'Divert light vehicles only to Sector-7 internal road network bypassing the main highway.',
+          reasoning: 'Lower impact on broader grid, suitable for lower volume scenarios.',
+          expectedImpact: 'Reduces light vehicle density on mainline by ~30%.',
+          confidence: 0.76,
           status: 'pending'
         }
       ]
     }
   ],
-  recommendations: []
+  recommendations: [],
+  timeline: [
+    {
+      id: 'evt-0',
+      timestamp: now(),
+      type: 'incident',
+      message: 'INC-2026-PDEU-01 initialized. Multi-vehicle collision on Koba-Gandhinagar Hwy near PDEU Main Gate.'
+    }
+  ],
+  alerts: {
+    vmsPublished: false,
+    socialPublished: false,
+    smsPublished: false
+  },
+  simulationElapsed: 0
 };

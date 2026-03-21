@@ -1,63 +1,112 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSimulationStore } from '@/lib/store';
-import { Megaphone, MessageSquare, RadioTower, Hand, Send } from 'lucide-react';
+import { RadioTower, Send, CheckCircle2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function AlertsGenerator() {
-  const incident = useSimulationStore(state => state.incident);
+  const { incident, publishAlert } = useSimulationStore();
   const [activeTab, setActiveTab] = useState('vms');
 
-  const vmsDraft = `ACCIDENT AHEAD\nI-95 NORTH\nUSE COLUMBUS BLVD\nEXPECT ${incident.estimatedClearance} MIN DELAY`;
-  const socialDraft = `🚨 Major Traffic Alert 🚨\nMulti-vehicle collision on ${incident.location.desc}. ${incident.blockedLanes} lanes blocked. Emergency crews on scene. Please avoid the area and use Columbus Blvd as an alternative route. Estimated delay: ${incident.estimatedClearance} mins. #UrbanCortex #TrafficAlert`;
-  const smsDraft = `City Alert: Avoid I-95 North at Exit 22 due to severe crash. Heavy delays expected for the next ${incident.estimatedClearance} mins.`;
+  const vmsDraft = `ACCIDENT AHEAD\nGJ-27 NEAR PDEU MAIN GATE\nUSE RING ROAD ALT ROUTE\nEXPECT ${incident.estimatedClearance} MIN DELAY`;
+  const socialDraft = `[TRAFFIC ALERT] Multi-vehicle collision on Koba-Gandhinagar Hwy, near PDEU Main Gate, Sector-23.\n\nSTATUS: ${incident.blockedLanes} of ${incident.totalLanes} lanes blocked.\nACTION: Emergency crews on scene. Avoid area; use Sardar Patel Ring Road as alternate route.\nEST DELAY: ${incident.estimatedClearance} mins.`;
+  const smsDraft = `PDEU/GJ Alert: Severe crash near PDEU Main Gate, Koba-Gandhinagar Hwy. Heavy delays expected for ${incident.estimatedClearance} mins. Use Ring Road alternate.`;
+
+  const renderPublishBadge = (published: boolean) =>
+    published ? (
+      <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 uppercase tracking-widest">
+        <CheckCircle2 size={10} /> Published
+      </span>
+    ) : null;
+
+  const handlePublish = () => {
+    const channelMap: Record<string, 'vms' | 'social' | 'sms'> = { vms: 'vms', social: 'social', sms: 'sms' };
+    const ch = channelMap[activeTab];
+    if (ch) publishAlert(ch);
+  };
+
+  const isCurrentPublished = () => {
+    if (activeTab === 'vms') return incident.alerts.vmsPublished;
+    if (activeTab === 'social') return incident.alerts.socialPublished;
+    if (activeTab === 'sms') return incident.alerts.smsPublished;
+    return false;
+  };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-900/60 backdrop-blur-md border border-slate-700/50 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all hover:border-slate-600/60">
-      <div className="p-4 border-b border-slate-700/50 bg-slate-800/40 flex justify-between items-center relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-        <h3 className="text-sm font-bold text-slate-200 uppercase flex items-center gap-2.5 tracking-wide relative z-10">
-          <div className="p-1.5 rounded-md bg-orange-500/10 border border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.2)]">
-            <Megaphone size={16} className="text-orange-400 drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]" />
-          </div>
-          Public Comm Generator
+    <div className="flex-1 flex flex-col bg-slate-950 border-0 rounded-none overflow-hidden">
+      <div className="p-3 border-b border-slate-800 bg-slate-900 flex justify-between items-center h-10">
+        <h3 className="text-[11px] font-bold text-slate-300 uppercase flex items-center gap-2 tracking-widest">
+          <RadioTower size={14} className="text-slate-500" />
+          Public Comm Drafts
         </h3>
-        <Button size="sm" className="h-8 text-xs bg-orange-600/90 hover:bg-orange-500 text-white font-semibold px-3 py-0 rounded-lg shadow-[0_0_10px_rgba(249,115,22,0.3)] hover:shadow-[0_0_15px_rgba(249,115,22,0.5)] transition-all border border-orange-400/50 relative z-10">
-          <Send size={12} className="mr-1.5" /> Publish All Contexts
-        </Button>
+        <div className="flex items-center gap-3">
+          {renderPublishBadge(isCurrentPublished())}
+          <Button
+            size="sm"
+            disabled={isCurrentPublished()}
+            onClick={handlePublish}
+            className="h-6 text-[10px] bg-slate-800 hover:bg-emerald-700 text-slate-300 hover:text-white font-bold uppercase tracking-wider px-3 py-0 rounded-sm border border-slate-700 hover:border-emerald-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Send size={10} className="mr-1.5" />
+            {isCurrentPublished() ? 'Sent' : 'Publish'}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex-1 p-4 bg-slate-950/20 flex flex-col h-full">
+      <div className="flex-1 flex flex-col">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="bg-slate-950/80 border border-slate-700/80 w-full justify-start h-10 mb-4 p-1 rounded-lg">
-            <TabsTrigger value="vms" className="text-xs uppercase tracking-wider font-semibold data-[state=active]:bg-slate-800 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"><RadioTower size={12} className="mr-1.5" /> VMS Sign</TabsTrigger>
-            <TabsTrigger value="social" className="text-xs uppercase tracking-wider font-semibold data-[state=active]:bg-slate-800 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"><MessageSquare size={12} className="mr-1.5" /> Social</TabsTrigger>
-            <TabsTrigger value="sms" className="text-xs uppercase tracking-wider font-semibold data-[state=active]:bg-slate-800 data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md transition-all"><Hand size={12} className="mr-1.5" /> SMS Advisory</TabsTrigger>
+          <TabsList className="bg-slate-950 border-b border-slate-800 w-full justify-start h-9 p-0 rounded-none">
+            <TabsTrigger
+              value="vms"
+              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
+            >
+              VMS Panel
+              {incident.alerts.vmsPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+            </TabsTrigger>
+            <TabsTrigger
+              value="social"
+              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
+            >
+              Social
+              {incident.alerts.socialPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+            </TabsTrigger>
+            <TabsTrigger
+              value="sms"
+              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
+            >
+              SMS
+              {incident.alerts.smsPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="vms" className="m-0 flex-1 h-full flex flex-col min-w-0">
-            <Card className="bg-slate-950 border-slate-700/80 h-full flex items-center justify-center p-5 rounded-lg shadow-inner min-w-0 overflow-hidden">
-              <pre className="text-orange-500 font-mono text-center leading-[2] text-sm sm:text-lg font-bold bg-[#110500] w-full py-8 px-4 rounded-md border border-orange-900/50 shadow-[0_0_20px_rgba(249,115,22,0.15)_inset,0_0_10px_rgba(249,115,22,0.2)] drop-shadow-[0_0_5px_rgba(249,115,22,0.8)] tracking-widest uppercase whitespace-pre-wrap break-words min-w-0 max-w-full">
+          <TabsContent value="vms" className="m-0 flex-1 flex flex-col min-w-0 p-4 bg-slate-950">
+            <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col p-4 rounded-sm min-w-0 overflow-hidden shadow-none">
+              <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-3 block border-b border-slate-800 pb-2">
+                Hardware Preview: VMS Board GJ-27 (PDEU Campus Junction)
+              </span>
+              <pre className={`font-mono text-center leading-[1.8] text-sm font-bold bg-[#0a0500] w-full py-6 px-4 rounded-sm border tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-900/60' : 'text-amber-500 border-amber-900/40'}`}>
                 {vmsDraft}
               </pre>
             </Card>
           </TabsContent>
-          
-          <TabsContent value="social" className="m-0 flex-1 h-full flex flex-col">
-            <Textarea 
-              className="w-full flex-1 min-h-[140px] bg-slate-950/80 border-slate-700/80 text-sm text-slate-200 resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50 rounded-lg shadow-inner"
+
+          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-4 bg-slate-950">
+            <Textarea
+              className={`w-full flex-1 bg-slate-900 border-slate-800 text-[12px] resize-none font-sans p-3 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 rounded-sm shadow-none transition-colors ${incident.alerts.socialPublished ? 'text-emerald-400' : 'text-slate-300'}`}
               defaultValue={socialDraft}
+              readOnly={incident.alerts.socialPublished}
             />
           </TabsContent>
-          
-          <TabsContent value="sms" className="m-0 flex-1 h-full flex flex-col">
-            <Textarea 
-              className="w-full flex-1 min-h-[140px] bg-slate-950/80 border-slate-700/80 text-sm text-slate-200 resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50 rounded-lg shadow-inner"
+
+          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-4 bg-slate-950">
+            <Textarea
+              className={`w-full flex-1 bg-slate-900 border-slate-800 text-[12px] resize-none font-sans p-3 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 rounded-sm shadow-none transition-colors ${incident.alerts.smsPublished ? 'text-emerald-400' : 'text-slate-300'}`}
               defaultValue={smsDraft}
+              readOnly={incident.alerts.smsPublished}
             />
           </TabsContent>
         </Tabs>

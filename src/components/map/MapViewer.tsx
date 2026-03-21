@@ -2,7 +2,6 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
 import { useSimulationStore } from '@/lib/store';
 import L from 'leaflet';
-import { useEffect } from 'react';
 
 // Fix Leaflet Default Icon Issue in Next.js
 const customIcon = new L.Icon({
@@ -16,57 +15,68 @@ const customIcon = new L.Icon({
 export default function MapViewer() {
   const incident = useSimulationStore((state) => state.incident);
 
-  const getColorForRoute = (type: string, status: string, level: string) => {
-    if (type === 'primary') return '#ef4444'; // Red for blocked/incident
-    if (type === 'diversion') return status === 'approved' ? '#3b82f6' : '#6b7280'; // Blue or Gray
-    if (type === 'emergency-corridor') return '#10b981'; // Green
-    return '#3b82f6';
+  // Diversion route r2 is linked to strategy strat-1
+  const isStratApproved = incident.strategies.find(s => s.id === 'strat-1')?.status === 'approved';
+
+  const getRouteStyle = (type: string, id: string) => {
+    if (type === 'primary') {
+      return { color: '#ef4444', weight: 5, dashArray: undefined as string | undefined, opacity: 0.9 };
+    }
+    if (type === 'emergency-corridor') {
+      return { color: '#10b981', weight: 4, dashArray: '6, 6' as string | undefined, opacity: 0.85 };
+    }
+    if (type === 'diversion') {
+      if (id === 'r2') {
+        return isStratApproved
+          ? { color: '#2563eb', weight: 5, dashArray: undefined as string | undefined, opacity: 0.9 }
+          : { color: '#94a3b8', weight: 3, dashArray: '8, 8' as string | undefined, opacity: 0.6 };
+      }
+      return { color: '#94a3b8', weight: 3, dashArray: '8, 8' as string | undefined, opacity: 0.6 };
+    }
+    return { color: '#3b82f6', weight: 3, dashArray: undefined as string | undefined, opacity: 0.8 };
   };
 
   return (
-    <MapContainer 
-      center={[incident.location.lat, incident.location.lng]} 
-      zoom={14} 
+    <MapContainer
+      center={[incident.location.lat, incident.location.lng]}
+      zoom={14}
       className="w-full h-full z-0"
-      zoomControl={false}
+      zoomControl={true}
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://carto.com/">CARTO</a>'
       />
-      
+
       <Marker position={[incident.location.lat, incident.location.lng]} icon={customIcon}>
         <Popup className="text-black">
           <strong>{incident.title}</strong><br/>
           {incident.location.desc}<br/>
-          Severity: <span className="text-red-600 uppercase text-xs font-bold">{incident.severity}</span>
+          Severity: <span className="text-red-600 uppercase text-xs font-bold">{incident.severity}</span><br/>
+          Status: <span className="uppercase text-xs font-bold">{incident.status}</span>
         </Popup>
       </Marker>
 
       {incident.routes.map(route => {
-        // Find if this route is part of a suggestion
-        const isDiversion = route.type === 'diversion';
-        const recStatus = isDiversion 
-          ? incident.recommendations.find(r => r.id === 'rec-1')?.status 
-          : 'approved';
-
-        const color = getColorForRoute(route.type, recStatus || 'pending', route.congestionLevel);
-        const weight = recStatus === 'approved' ? 6 : 3;
-        const dashArray = recStatus === 'pending' ? '5, 10' : undefined;
-
+        const style = getRouteStyle(route.type, route.id);
         return (
-          <Polyline 
+          <Polyline
             key={route.id}
             positions={route.coordinates}
-            color={color}
-            weight={weight}
-            dashArray={dashArray}
-            opacity={0.8}
+            color={style.color}
+            weight={style.weight}
+            dashArray={style.dashArray}
+            opacity={style.opacity}
           >
             <Popup className="text-black text-sm">
               <strong>{route.name}</strong><br/>
               Type: {route.type}<br/>
-              Status: {isDiversion ? recStatus : route.congestionLevel}
+              Congestion: {route.congestionLevel}<br/>
+              {route.type === 'diversion' && route.id === 'r2' && (
+                <span className={isStratApproved ? 'text-blue-600 font-bold' : 'text-gray-500'}>
+                  {isStratApproved ? '✓ ACTIVE — Diversion Live' : 'Pending Approval'}
+                </span>
+              )}
             </Popup>
           </Polyline>
         );

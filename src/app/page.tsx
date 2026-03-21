@@ -4,105 +4,108 @@ import IncidentSummary from '@/components/dashboard/IncidentSummary';
 import AIRecommendations from '@/components/ai/AIRecommendations';
 import CopilotChat from '@/components/copilot/CopilotChat';
 import AlertsGenerator from '@/components/actions/AlertsGenerator';
-import { LayoutDashboard, Map as MapIcon, ShieldAlert, Activity, Settings, Bell, UserCircle } from 'lucide-react';
+import OperationLog from '@/components/dashboard/OperationLog';
+import SimControls from '@/components/dashboard/SimControls';
+import { LayoutDashboard, Map as MapIcon, ShieldAlert, Settings, Bell, UserCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'UrbanCortexLLM Dashboard',
-  description: 'Intelligent Traffic Incident Command Co-Pilot',
+  title: 'UrbanCortexLLM Operations — PDEU Gandhinagar',
+  description: 'Intelligent Traffic Incident Command Co-Pilot — PDEU Gandhinagar, Gujarat',
 };
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-slate-50 overflow-hidden font-sans selection:bg-cyan-500/30">
-      
-      {/* Sidebar Navigation - Responsive (Bottom bar on mobile, Sidebar on md) */}
-      <nav className="w-full h-16 md:w-16 md:h-full flex flex-row md:flex-col items-center justify-around md:justify-start py-2 md:py-4 px-4 md:px-0 bg-slate-950 border-t md:border-t-0 md:border-r border-slate-800/80 z-30 shrink-0 md:shadow-2xl shadow-black/50 order-last md:order-first">
-        <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center md:mb-8 shadow-[0_0_15px_rgba(6,182,212,0.4)] shrink-0 hidden md:flex">
-          <Activity size={24} className="text-white relative z-10" />
+    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-slate-200 overflow-hidden font-sans selection:bg-blue-900/50">
+
+      {/* Sidebar Navigation */}
+      <nav className="w-full h-14 md:w-16 md:h-full flex flex-row md:flex-col items-center justify-around md:justify-start py-2 md:py-4 px-4 md:px-0 bg-slate-900 border-t md:border-t-0 md:border-r border-slate-800 z-30 shrink-0 order-last md:order-first">
+        <div className="w-10 h-10 bg-blue-700 text-white rounded flex items-center justify-center md:mb-6 shrink-0 hidden md:flex font-bold text-lg leading-none cursor-default">
+          UC
         </div>
-        <div className="flex flex-row md:flex-col gap-2 md:gap-6 w-full items-center justify-center md:flex-1">
-          <button className="p-2.5 rounded-xl bg-slate-800 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)] transition-all">
-            <LayoutDashboard size={20} />
+        <div className="flex flex-row md:flex-col gap-2 md:gap-4 w-full items-center justify-center md:flex-1">
+          <button className="p-2.5 rounded text-blue-400 bg-slate-800/80 hover:bg-slate-800 transition-colors">
+            <LayoutDashboard size={18} />
           </button>
-          <button className="p-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/50 transition-all">
-            <MapIcon size={20} />
+          <button className="p-2.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-colors">
+            <MapIcon size={18} />
           </button>
-          <button className="p-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/50 transition-all">
-            <ShieldAlert size={20} />
+          <button className="p-2.5 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-colors">
+            <ShieldAlert size={18} />
           </button>
         </div>
         <div className="flex flex-row md:flex-col gap-4 w-auto md:w-full items-center md:mt-auto hidden md:flex">
-          <button className="p-2 rounded-xl text-slate-400 hover:text-slate-100 transition-all">
-            <Settings size={20} />
+          <button className="p-2 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-colors">
+            <Settings size={18} />
           </button>
         </div>
       </nav>
 
       <div className="flex-1 flex flex-col min-w-0 bg-slate-950 overflow-hidden">
         {/* Top Navbar */}
-        <header className="h-14 bg-slate-900/60 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-4 md:px-6 z-20 shrink-0">
-          <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.4)] shrink-0 md:hidden mr-1">
-              <Activity size={18} className="text-white relative z-10" />
-            </div>
-            <h1 className="text-base md:text-lg font-bold tracking-tight text-white flex items-center gap-1 md:gap-2 truncate">
-              UrbanCortex<span className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] hidden sm:inline">LLM</span>
+        <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:px-6 z-20 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 bg-blue-700 text-white rounded flex items-center justify-center shrink-0 md:hidden font-bold text-sm">UC</div>
+            <h1 className="text-[13px] font-bold tracking-wider text-slate-200 uppercase flex items-center gap-2 truncate">
+              UrbanCortexLLM <span className="text-slate-600 font-normal">-</span> LLM For Traffic Management
             </h1>
-            <div className="h-4 w-px bg-slate-700 mx-1 md:mx-2 shrink-0"></div>
-            <div className="flex items-center gap-1.5 md:gap-2 px-2 py-0.5 md:py-1 rounded-full bg-green-500/10 border border-green-500/20 shrink-0 hidden xs:flex">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-[10px] md:text-[11px] font-medium text-green-400 tracking-wide uppercase whitespace-nowrap">Active</span>
+            <div className="h-4 w-px bg-slate-700 mx-1 shrink-0"></div>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-emerald-950/40 border border-emerald-900/50 shrink-0 hidden xs:flex">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+              <span className="text-[10px] font-bold text-emerald-500 tracking-widest uppercase">System Active</span>
             </div>
+            <div className="hidden sm:block text-[10px] font-mono text-slate-500 ml-1">| PDEU Gandhinagar, GJ</div>
           </div>
-          <div className="flex items-center gap-3 md:gap-4 shrink-0">
-            <button className="relative text-slate-400 hover:text-white transition-colors">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <div className="flex items-center gap-4 shrink-0">
+            <SimControls />
+            <button className="relative text-slate-400 hover:text-slate-200 transition-colors">
+              <Bell size={16} />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-slate-900"></span>
             </button>
-            <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center">
-              <UserCircle size={18} className="text-slate-300" />
+            <div className="h-7 w-7 rounded bg-slate-800 border border-slate-700 flex items-center justify-center">
+              <UserCircle size={16} className="text-slate-400" />
             </div>
           </div>
         </header>
 
-        {/* Main Dashboard Content - Responsive Stack/Row */}
+        {/* Main Dashboard Content */}
         <div className="flex-1 flex flex-col xl:flex-row overflow-y-auto xl:overflow-hidden relative min-w-0">
-          
-          {/* Left Panel: Incident Context & Reasoning */}
-          <aside className="w-full xl:w-[360px] flex flex-col border-b xl:border-b-0 xl:border-r border-slate-800/60 bg-slate-900/30 backdrop-blur-sm z-10 xl:overflow-y-auto shrink-0 transition-all order-1 max-w-full">
-            <div className="p-4 border-b border-slate-800/60 bg-slate-900/80 sticky top-0 z-10 backdrop-blur-md">
-              <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                <ShieldAlert size={14} className="text-cyan-400" />
-                Incident Command
+
+          {/* Left Panel: Incident Context & Strategy */}
+          <aside className="w-full xl:w-[380px] flex flex-col border-b xl:border-b-0 xl:border-r border-slate-800 bg-slate-950 z-10 xl:overflow-y-auto shrink-0 order-1 max-w-full">
+            <div className="px-4 py-2 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 flex items-center h-10">
+              <h2 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase flex items-center gap-2">
+                <ShieldAlert size={12} className="text-slate-500" />
+                Incident Context &amp; Strategy
               </h2>
             </div>
-            <div className="p-4 flex-1 flex flex-col gap-4 min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 bg-slate-950">
               <IncidentSummary />
               <AIRecommendations />
             </div>
           </aside>
 
-          {/* Center: Map Visualization */}
-          <main className="w-full h-[450px] xl:h-auto xl:flex-1 flex flex-col relative bg-black/50 min-w-0 ring-1 ring-slate-800/50 inset-shadow-sm shrink-0 order-2">
-            <div className="flex-1 relative z-0 min-h-0">
+          {/* Center: Map + Operation Log */}
+          <main className="w-full xl:flex-1 flex flex-col relative bg-slate-900 min-w-0 shrink-0 order-2">
+            <div className="flex-1 relative z-0 min-h-0" style={{ minHeight: '350px' }}>
               <MapWidget />
             </div>
+            <OperationLog />
           </main>
 
-          {/* Right Panel: Communications & Narrative */}
-          <aside className="w-full xl:w-[400px] flex flex-col border-t xl:border-t-0 xl:border-l border-slate-800/60 bg-slate-900/30 backdrop-blur-sm z-10 xl:overflow-y-auto shrink-0 transition-all order-3 max-w-full">
-             <div className="p-4 border-b border-slate-800/60 bg-slate-900/80 sticky top-0 z-10 backdrop-blur-md">
-              <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse"></span>
-                Action & Comm
+          {/* Right Panel: Communications & Actions */}
+          <aside className="w-full xl:w-[400px] flex flex-col border-t xl:border-t-0 xl:border-l border-slate-800 bg-slate-950 z-10 xl:overflow-y-auto shrink-0 order-3 max-w-full">
+            <div className="px-4 py-2 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 flex items-center h-10">
+              <h2 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-sm bg-blue-500"></div>
+                Command Support &amp; Actions
               </h2>
             </div>
-            <div className="p-4 flex flex-col gap-4 flex-1 min-w-0">
+            <div className="flex flex-col flex-1 min-w-0 bg-slate-950">
               <CopilotChat />
               <AlertsGenerator />
             </div>
           </aside>
-          
+
         </div>
       </div>
     </div>
