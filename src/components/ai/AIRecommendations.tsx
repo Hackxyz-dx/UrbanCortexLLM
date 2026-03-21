@@ -13,61 +13,67 @@ export default function AIRecommendations() {
   const activeStrats = incident.strategies.filter(s => s.status === 'approved');
 
   return (
-    <Card className="bg-neutral-900 border-neutral-800 rounded-lg shadow-sm flex flex-col h-full flex-1">
-      <CardHeader className="p-4 border-b border-neutral-800 bg-neutral-900/80 sticky top-0 z-10 pb-4 shadow-sm">
-        <CardTitle className="text-sm font-bold text-neutral-200 uppercase flex items-center justify-between">
-          <span className="flex items-center gap-2"><Cpu size={16} className="text-cyan-400" /> AI Tactics Generated</span>
-          <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-400 text-[10px] uppercase font-mono tracking-widest border-cyan-500/20">
+    <Card className="bg-slate-900/60 backdrop-blur-md border-slate-700/50 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex flex-col h-full flex-1 overflow-hidden transition-all hover:border-slate-600/60">
+      <CardHeader className="p-5 border-b border-slate-700/50 bg-slate-800/40 sticky top-0 z-10">
+        <CardTitle className="text-sm font-bold text-slate-200 uppercase flex flex-wrap items-center justify-between tracking-wide gap-3">
+          <span className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-cyan-500/10 border border-cyan-500/20">
+              <Cpu size={16} className="text-cyan-400" />
+            </div>
+            AI Tactics Generated
+          </span>
+          <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-300 text-[11px] uppercase font-mono tracking-widest border border-cyan-500/30 px-2 py-0.5 shadow-[0_0_10px_rgba(6,182,212,0.2)] shrink-0">
             {pendingStrats.length} Plans
           </Badge>
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
-        <ScrollArea className="h-full w-full p-4">
-          <div className="flex flex-col gap-4">
+      <CardContent className="p-0 flex-1 overflow-hidden flex flex-col bg-slate-950/20">
+        <ScrollArea className="h-full w-full p-5">
+          <div className="flex flex-col gap-5">
             {activeStrats.map(strat => (
-              <div key={strat.id} className="border border-green-500/30 rounded-lg bg-green-500/5 p-4 shadow-inner">
-                 <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 size={16} className="text-green-500" />
-                    <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider">Active: {strat.name}</h4>
+              <div key={strat.id} className="border border-green-500/40 rounded-xl bg-green-500/10 p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)] relative overflow-hidden backdrop-blur-sm">
+                 <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                 <div className="flex items-center gap-2.5 mb-2 relative z-10">
+                    <CheckCircle2 size={18} className="text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.8)]" />
+                    <h4 className="text-sm font-bold text-green-300 uppercase tracking-wider">Active: {strat.name}</h4>
                  </div>
-                 <p className="text-xs text-neutral-400 leading-relaxed">System is currently executing actions associated with this strategy via connected IoT controllers.</p>
+                 <p className="text-sm text-slate-300 leading-relaxed relative z-10 font-medium">System is currently executing actions associated with this strategy via connected IoT controllers.</p>
               </div>
             ))}
 
             {pendingStrats.map(strat => (
-              <div key={strat.id} className="border border-neutral-700 rounded-lg bg-neutral-950 p-4 shadow-sm hover:border-neutral-600 transition-colors">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold bg-cyan-900/50 text-cyan-400">
+              <div key={strat.id} className="border border-slate-700/60 rounded-xl bg-slate-900/80 p-5 shadow-sm hover:border-cyan-500/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all group backdrop-blur-sm">
+                <div className="flex justify-between items-start mb-4 flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold bg-slate-800 border border-slate-700 text-cyan-400 group-hover:bg-cyan-900/40 group-hover:border-cyan-700/50 transition-colors shadow-inner shrink-0">
                       #{strat.rank}
                     </div>
-                    <h4 className="text-sm font-bold text-white">{strat.name}</h4>
+                    <h4 className="text-base font-bold text-white tracking-tight break-words min-w-0">{strat.name}</h4>
                   </div>
-                  <Badge variant="outline" className="text-[10px] bg-neutral-900 border-neutral-700 text-neutral-400 font-mono">
+                  <Badge variant="outline" className="text-xs bg-slate-950/50 border-slate-700 text-slate-300 font-mono font-semibold px-2 shrink-0">
                     Conf: {(strat.overallConfidence * 100).toFixed(0)}%
                   </Badge>
                 </div>
                 
-                <div className="mb-4">
-                   <span className="text-[10px] uppercase tracking-wider text-cyan-500/70 mb-2 block font-semibold">Suggested Actions ({strat.actions.length})</span>
-                   <ul className="space-y-3">
+                <div className="mb-5 min-w-0">
+                   <span className="text-[11px] uppercase tracking-widest text-cyan-500/80 mb-3 block font-bold">Suggested Actions ({strat.actions.length})</span>
+                   <ul className="space-y-3 min-w-0">
                       {strat.actions.map(a => (
-                        <li key={a.id} className="bg-neutral-900 rounded p-3 border border-neutral-800">
-                          <div className="text-xs font-bold text-neutral-200 mb-1">{a.title}</div>
-                          <div className="text-[11px] text-neutral-400 mb-2">{a.description}</div>
-                          <div className="flex items-start gap-2 text-[10px] text-neutral-500">
-                            <span className="shrink-0 font-medium text-neutral-600">Impact:</span>
-                            <span>{a.expectedImpact}</span>
+                        <li key={a.id} className="bg-slate-950/50 rounded-lg p-3.5 border border-slate-800/80 hover:border-slate-700 transition-colors max-w-full overflow-hidden">
+                          <div className="text-sm font-bold text-slate-200 mb-1.5 break-words">{a.title}</div>
+                          <div className="text-xs text-slate-400 mb-2.5 leading-relaxed break-words">{a.description}</div>
+                          <div className="flex items-start gap-2 text-[11px] bg-slate-900/80 inline-flex px-2 py-1 rounded border border-slate-800 max-w-full overflow-hidden">
+                            <span className="font-semibold text-slate-500 uppercase tracking-wider shrink-0 mt-0.5">Impact:</span>
+                            <span className="text-slate-300 font-medium break-words min-w-0">{a.expectedImpact}</span>
                           </div>
                         </li>
                       ))}
                    </ul>
                 </div>
 
-                <div className="flex justify-end pt-2 border-t border-neutral-800 mt-2">
-                  <Button size="sm" className="h-8 text-xs bg-cyan-600 hover:bg-cyan-500 text-white font-medium w-full" onClick={() => updateStrategyStatus(strat.id, 'approved')}>
+                <div className="flex justify-end pt-4 border-t border-slate-800/80 mt-2">
+                  <Button size="sm" className="h-10 text-sm bg-cyan-600/90 hover:bg-cyan-500 text-white font-semibold w-full rounded-lg shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all border border-cyan-400/50" onClick={() => updateStrategyStatus(strat.id, 'approved')}>
                     Approve Strategy
                   </Button>
                 </div>

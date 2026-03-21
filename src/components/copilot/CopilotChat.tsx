@@ -64,23 +64,25 @@ export default function CopilotChat() {
   };
 
   return (
-    <Card className="bg-neutral-900 border-neutral-800 rounded-lg shadow-sm flex flex-col h-[320px] shrink-0">
-      <CardHeader className="p-3 border-b border-neutral-800 bg-neutral-900/80">
-        <CardTitle className="text-xs font-bold text-neutral-300 uppercase flex items-center gap-2">
-          <Bot size={14} className="text-cyan-400" />
+    <Card className="bg-slate-900/60 backdrop-blur-md border border-slate-700/50 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex flex-col h-[380px] shrink-0 transition-all hover:border-slate-600/60">
+      <CardHeader className="p-4 border-b border-slate-700/50 bg-slate-800/40 sticky top-0 z-10">
+        <CardTitle className="text-sm font-bold text-slate-200 uppercase flex items-center gap-2.5 tracking-wide">
+          <div className="p-1.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.2)]">
+            <Bot size={16} className="text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]" />
+          </div>
           Conversational Co-Pilot
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-0 flex flex-col flex-1 overflow-hidden">
-        <ScrollArea className="flex-1 p-3" ref={scrollRef}>
-          <div className="flex flex-col gap-3">
+      <CardContent className="p-0 flex flex-col flex-1 overflow-hidden bg-slate-950/20">
+        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <div className="flex flex-col gap-4">
             {messages.map(msg => (
-              <div key={msg.id} className={`flex gap-2 text-xs ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${msg.sender === 'user' ? 'bg-neutral-700' : 'bg-cyan-900'}`}>
-                  {msg.sender === 'user' ? <User size={12} className="text-neutral-300" /> : <Bot size={12} className="text-cyan-400" />}
+              <div key={msg.id} className={`flex gap-3 text-sm ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md ${msg.sender === 'user' ? 'bg-slate-700 border border-slate-600' : 'bg-cyan-900/60 border border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]'}`}>
+                  {msg.sender === 'user' ? <User size={14} className="text-slate-200 shrink-0" /> : <Bot size={14} className="text-cyan-400 drop-shadow-[0_0_5px_rgba(6,182,212,0.8)] shrink-0" />}
                 </div>
-                <div className={`max-w-[85%] rounded p-2 ${msg.sender === 'user' ? 'bg-neutral-800 text-neutral-200 rounded-tr-none' : 'bg-neutral-950 border border-neutral-800 text-neutral-300 rounded-tl-none'}`}>
+                <div className={`max-w-[85%] sm:max-w-[80%] break-words whitespace-pre-wrap min-w-0 rounded-xl p-3 shadow-md border ${msg.sender === 'user' ? 'bg-slate-800/90 border-slate-700 text-slate-100 rounded-tr-none' : 'bg-slate-900/90 border-cyan-900/50 text-cyan-50 rounded-tl-none shadow-[0_0_15px_rgba(6,182,212,0.1)] leading-relaxed font-medium tracking-wide'}`}>
                   {msg.text}
                 </div>
               </div>
@@ -88,15 +90,16 @@ export default function CopilotChat() {
           </div>
         </ScrollArea>
         
-        <div className="p-2 border-t border-neutral-800 bg-neutral-950/50">
-          <div className="flex gap-1 mb-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="p-3 border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-sm">
+          <div className="flex flex-wrap gap-2 mb-3 pb-1">
             {PREDEFINED_TUTORIAL_QUERIES.map((q, i) => (
               <button 
                 key={i}
                 onClick={() => handleSend(q)}
-                className="shrink-0 text-[9px] bg-neutral-800 hover:bg-neutral-700 text-neutral-400 px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1 transition-colors"
+                className="text-xs font-medium bg-slate-800/80 hover:bg-slate-700 border border-slate-700 hover:border-cyan-500/50 hover:shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:text-cyan-300 text-slate-300 px-3 py-1.5 rounded-full text-left flex items-start gap-1.5 transition-all text-wrap"
               >
-                <PlayCircle size={10} /> {q.substring(0, 25)}...
+                <PlayCircle size={14} className="text-cyan-500/70 shrink-0 mt-0.5" /> 
+                <span className="leading-tight">{q}</span>
               </button>
             ))}
           </div>
@@ -108,14 +111,14 @@ export default function CopilotChat() {
               placeholder="Ask for operational support..." 
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="h-8 text-xs bg-neutral-900 border-neutral-700 text-white placeholder:text-neutral-600 pr-8"
+              className="h-10 text-sm bg-slate-950/80 border-slate-700/80 text-white placeholder:text-slate-500 pr-10 focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50 shadow-inner rounded-lg"
             />
             <Button 
               type="submit" 
               size="icon" 
-              className="h-6 w-6 absolute right-1 top-1 bg-transparent hover:bg-neutral-800 text-cyan-500"
+              className="h-8 w-8 absolute right-1 top-1 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-400 hover:text-cyan-300 hover:shadow-[0_0_10px_rgba(6,182,212,0.4)] transition-all rounded-md border border-cyan-500/30"
             >
-              <SendHorizontal size={12} />
+              <SendHorizontal size={16} />
             </Button>
           </form>
         </div>
