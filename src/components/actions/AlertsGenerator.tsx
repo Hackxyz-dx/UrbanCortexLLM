@@ -51,12 +51,12 @@ export default function AlertsGenerator() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full w-full">
-      <div className="flex-1 flex flex-col w-full h-full">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full">
+    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full w-full min-h-0 min-w-0">
+      <div className="flex-1 flex flex-col w-full h-full min-h-0 min-w-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full min-h-0 min-w-0">
 
           {/* Tabs header */}
-          <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-2 shrink-0 min-w-0">
             <TabsList className="bg-transparent border-none justify-start h-14 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
               <TabsTrigger value="vms"    className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max">
                 VMS Panel
@@ -107,21 +107,21 @@ export default function AlertsGenerator() {
           )}
 
           {/* VMS */}
-          <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-6 bg-white overflow-y-auto">
-            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-6 rounded-md w-full shadow-sm min-h-[min-content]">
-              <span className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 block border-b border-slate-200 pb-3 shrink-0">
+          <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-4 md:p-6 bg-white overflow-y-auto min-h-0 min-w-0">
+            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-4 md:p-6 rounded-md w-full shadow-sm min-h-0 min-w-0">
+              <span className="text-[10px] md:text-xs uppercase tracking-widest text-slate-500 font-bold mb-3 block border-b border-slate-200 pb-2 shrink-0">
                 Hardware Preview: VMS Board GJ-27 (PDEU Campus Junction)
               </span>
-              <pre className={`font-mono text-center leading-[1.8] text-base md:text-lg font-bold bg-[#1a1a1a] w-full py-10 px-5 rounded border-2 tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors shadow-inner ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>
+              <pre className={`font-mono text-center leading-[1.6] md:leading-[1.8] text-sm md:text-lg font-bold bg-[#1a1a1a] w-full py-6 md:py-10 px-4 md:px-5 rounded border-2 tracking-widest uppercase whitespace-pre-wrap break-words flex-1 flex items-center justify-center transition-colors shadow-inner min-h-0 overflow-y-auto ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>
                 {vmsDraft}
               </pre>
             </div>
           </TabsContent>
 
           {/* Social */}
-          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-6 bg-white">
+          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-4 md:p-6 bg-white min-h-0 min-w-0">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-[200px] ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 md:p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-0 overflow-y-auto ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={socialDraft}
               key={socialDraft}
               readOnly={incident.alerts.socialPublished}
@@ -129,9 +129,9 @@ export default function AlertsGenerator() {
           </TabsContent>
 
           {/* SMS */}
-          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-6 bg-white">
+          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-4 md:p-6 bg-white min-h-0 min-w-0">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-[120px] ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 md:p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-0 overflow-y-auto ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={smsDraft}
               key={smsDraft}
               readOnly={incident.alerts.smsPublished}

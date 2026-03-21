@@ -1,28 +1,34 @@
 /**
  * Main entry point for the map service layer.
- * Reads MAP_PROVIDER env var and returns the correct provider instance.
- * All application code should import from here — never from individual provider files.
+ *
+ * Reads MAP_PROVIDER env var (or auto-detects from API keys) and returns
+ * the correct routing provider instance.
+ *
+ * Provider priority:
+ *   1. ORS (openrouteservice.org) — free, 2000 req/day
+ *   2. GraphHopper               — free, 500 req/day
+ *   3. Mock                      — deterministic, no key needed
+ *
+ * All app code should import from here — never from individual provider files.
  */
 
 import type { MapProvider } from './provider';
 import { env } from '@/lib/config/env';
 
-// Lazy-initialise providers to avoid loading unused code.
 let _provider: MapProvider | null = null;
 
 export function getMapProvider(): MapProvider {
   if (_provider) return _provider;
 
   switch (env.activeProvider) {
-    case 'here': {
-      // Dynamically import so HERE SDK doesn't bloat the Mapbox path.
-      const { HereProvider } = require('./here') as { HereProvider: new () => MapProvider };
-      _provider = new HereProvider();
+    case 'ors': {
+      const { OrsProvider } = require('./ors') as { OrsProvider: new () => MapProvider };
+      _provider = new OrsProvider();
       break;
     }
-    case 'mapbox': {
-      const { MapboxProvider } = require('./mapbox') as { MapboxProvider: new () => MapProvider };
-      _provider = new MapboxProvider();
+    case 'graphhopper': {
+      const { GraphHopperProvider } = require('./graphhopper') as { GraphHopperProvider: new () => MapProvider };
+      _provider = new GraphHopperProvider();
       break;
     }
     case 'mock':
