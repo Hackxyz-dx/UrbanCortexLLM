@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { IncidentState, initialMockIncident, ActionStatus, TimelineEvent } from '../data/mockIncident';
+import type { LLMRecommendation, LLMRecommendationOutput, LLMAlertDrafts, LLMRecommendationStatus } from '@/types/llm';
 
 // ─────────────────────────────────────────────
 // Chat types
@@ -10,6 +11,7 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   isLoading?: boolean;
+  source?: 'llm' | 'mock-engine';
 }
 
 // ─────────────────────────────────────────────
@@ -20,9 +22,31 @@ interface SimulationStore {
   chatMessages: ChatMessage[];
   isSimRunning: boolean;
 
-  // --- Strategy & Recommendation Actions ---
+  // LLM recommendation state
+  llmRecommendations: LLMRecommendation[];
+  llmRecsLoading: boolean;
+  llmRecsError: string | null;
+  llmExplanation: string | null;
+  llmConfidence: number | null;
+  llmCautionNote: string | null;
+
+  // Alert drafts from LLM
+  alertDrafts: { vms: string; social: string; sms: string; source: string } | null;
+  alertDraftsLoading: boolean;
+  alertDraftsError: string | null;
+
+  // --- Strategy & Recommendation Actions (pre-existing mock flow) ---
   updateStrategyStatus: (id: string, status: ActionStatus) => void;
-  updateRecommendationStatus: (id: string, status: ActionStatus) => void;
+
+  // --- LLM Recommendation Lifecycle ---
+  approveRecommendation: (id: string) => void;
+  rejectRecommendation: (id: string) => void;
+  markRecommendationActive: (id: string) => void;
+  completeRecommendation: (id: string) => void;
+
+  // --- Fetch LLM Outputs ---
+  fetchLLMRecommendations: () => Promise<void>;
+  fetchAlertDrafts: () => Promise<void>;
 
   // --- Chat Actions ---
   sendChatMessage: (text: string) => void;
@@ -37,39 +61,7 @@ interface SimulationStore {
 
   // --- Internal Utility ---
   _addTimelineEvent: (type: TimelineEvent['type'], message: string) => void;
-}
-
-// ─────────────────────────────────────────────
-// Helper: build a contextual mock-LLM response
-// ─────────────────────────────────────────────
-function buildChatResponse(text: string, incident: IncidentState): string {
-  const q = text.toLowerCase();
-  const activeStrat = incident.strategies.find(s => s.status === 'approved');
-  const clearMins = incident.estimatedClearance;
-
-  if (q.includes('safe') || q.includes('open') || q.includes('lane')) {
-    return `SAFETY ADVISORY: Emergency services are actively operating on Koba-Gandhinagar Hwy near PDEU Gate. Lane re-opening is not permitted. Estimated safe window: ${Math.max(clearMins - 20, 10)} minutes.`;
-  }
-  if (q.includes('diversion') || q.includes('first') || q.includes('route')) {
-    if (activeStrat) {
-      return `Diversion "${activeStrat.name}" is currently ACTIVE. Sardar Patel Ring Road is handling ~700 vph of re-routed traffic. No new diversion required.`;
-    }
-    return `Recommended: Activate "Sardar Patel Ring Road Diversion" (Rank #1, 93% confidence). It provides 45% spare capacity and bypasses the mainline queue. Approve Strategy #1 to execute.`;
-  }
-  if (q.includes('10 minutes') || q.includes('delay') || q.includes('queue') || q.includes('clearance')) {
-    return `Current queue is estimated at 2.3 km on Koba-Gandhinagar Hwy. Without intervention, delayed clearance by 25+ min is projected. With active Ring Road diversion, queue should stabilize within ${clearMins} minutes.`;
-  }
-  if (q.includes('message') || q.includes('alert') || q.includes('publish') || q.includes('vms')) {
-    return `Draft VMS message ready in the Comm Drafts panel. Recommended broadcast: "ACCIDENT AHEAD — GJ-27 NEAR PDEU — USE RING ROAD — EXPECT ${clearMins} MIN DELAY". Navigate to the right panel to publish.`;
-  }
-  if (q.includes('status') || q.includes('update') || q.includes('what changed') || q.includes('last')) {
-    const lastEvents = incident.timeline.slice(-3).reverse().map(e => `  [${e.timestamp}] ${e.message}`).join('\n');
-    return `Recent operational log:\n${lastEvents}`;
-  }
-  if (q.includes('recommend') || q.includes('strategy') || q.includes('why')) {
-    return `Strategy #1 "Ring Road Diversion + Signal Cascade" is ranked highest (93% confidence). It provides the best queue reduction (-2.1 km) and reduced secondary crash risk (-38%). Reason: Ring Road capacity is currently adequate to handle diverted volume.`;
-  }
-  return `Query processed. Current incident: ${incident.title}. Status: ${incident.status.toUpperCase()}. ETA clearance: ${clearMins} min. ${incident.strategies.filter(s => s.status === 'approved').length} strategies active.`;
+  _setRecommendationStatus: (id: string, status: LLMRecommendationStatus) => void;
 }
 
 // ─────────────────────────────────────────────
@@ -88,11 +80,24 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     {
       id: 'sys-0',
       sender: 'system',
-      text: 'UrbanCortex Tactical Query Console initialized. Monitoring INC-2026-PDEU-01 — Koba-Gandhinagar Highway, near PDEU Main Gate.',
+      text: 'UrbanCortex Tactical Query Console initialized. Monitoring INC-2026-PDEU-01 — Koba-Gandhinagar Highway, near PDEU Main Gate. LLM co-pilot is active.',
       timestamp: ts()
     }
   ],
   isSimRunning: false,
+
+  // LLM state
+  llmRecommendations: [],
+  llmRecsLoading: false,
+  llmRecsError: null,
+  llmExplanation: null,
+  llmConfidence: null,
+  llmCautionNote: null,
+
+  // Alert drafts
+  alertDrafts: null,
+  alertDraftsLoading: false,
+  alertDraftsError: null,
 
   // ── Utility ──────────────────────────────────
   _addTimelineEvent: (type, message) => set(state => ({
@@ -105,7 +110,13 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     }
   })),
 
-  // ── Strategy Approval ────────────────────────
+  _setRecommendationStatus: (id, status) => set(state => ({
+    llmRecommendations: state.llmRecommendations.map(r =>
+      r.id === id ? { ...r, status } : r
+    )
+  })),
+
+  // ── Strategy Approval (pre-existing mock strategies) ─────────────────────
   updateStrategyStatus: (id, status) => {
     set(state => ({
       incident: {
@@ -126,21 +137,134 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     }
   },
 
-  // ── Recommendation Status ────────────────────
-  updateRecommendationStatus: (id, status) => set(state => ({
-    incident: {
-      ...state.incident,
-      recommendations: state.incident.recommendations.map(r =>
-        r.id === id ? { ...r, status } : r
-      )
-    }
-  })),
+  // ── LLM Recommendation Lifecycle ─────────────────────────────────────────
 
-  // ── Chat Engine ──────────────────────────────
+  approveRecommendation: (id) => {
+    get()._setRecommendationStatus(id, 'approved');
+    const rec = get().llmRecommendations.find(r => r.id === id);
+    if (rec) {
+      set(state => ({
+        llmRecommendations: state.llmRecommendations.map(r =>
+          r.id === id ? { ...r, status: 'approved', approvedAt: new Date().toISOString() } : r
+        )
+      }));
+      get()._addTimelineEvent('approval', `LLM recommendation approved: "${rec.title}".`);
+
+      // If it's a diversion, flag it on the incident (map overlay)
+      if (rec.type === 'diversion') {
+        const divName = rec.diversionRouteName;
+        if (divName) {
+          set(state => ({
+            incident: {
+              ...state.incident,
+              routes: state.incident.routes.map(r =>
+                r.name === divName ? { ...r, congestionLevel: 'moderate' as const } : r
+              )
+            }
+          }));
+        }
+      }
+      // If it's a public-alert, generate alert drafts
+      if (rec.type === 'public-alert') {
+        get().fetchAlertDrafts();
+      }
+    }
+  },
+
+  rejectRecommendation: (id) => {
+    get()._setRecommendationStatus(id, 'rejected');
+    const rec = get().llmRecommendations.find(r => r.id === id);
+    if (rec) {
+      get()._addTimelineEvent('recommendation', `LLM recommendation rejected: "${rec.title}".`);
+    }
+  },
+
+  markRecommendationActive: (id) => {
+    get()._setRecommendationStatus(id, 'active');
+    const rec = get().llmRecommendations.find(r => r.id === id);
+    if (rec) {
+      get()._addTimelineEvent('approval', `LLM recommendation marked active: "${rec.title}".`);
+    }
+  },
+
+  completeRecommendation: (id) => {
+    get()._setRecommendationStatus(id, 'completed');
+    const rec = get().llmRecommendations.find(r => r.id === id);
+    if (rec) {
+      get()._addTimelineEvent('approval', `LLM recommendation completed: "${rec.title}".`);
+    }
+  },
+
+  // ── Fetch LLM Recommendations ─────────────────────────────────────────────
+  fetchLLMRecommendations: async () => {
+    const { incident, llmRecommendations } = get();
+    set({ llmRecsLoading: true, llmRecsError: null });
+    try {
+      const res = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incident, llmRecommendations }),
+      });
+      const data = await res.json() as { success: boolean; output?: LLMRecommendationOutput; error?: string };
+      if (data.success && data.output) {
+        set({
+          llmRecommendations: data.output.recommendations,
+          llmExplanation: data.output.explanation,
+          llmConfidence: data.output.confidence,
+          llmCautionNote: data.output.cautionNote ?? null,
+          llmRecsLoading: false,
+          llmRecsError: null,
+        });
+        get()._addTimelineEvent(
+          'recommendation',
+          `LLM generated ${data.output.recommendations.length} recommendation(s). Provider: ${data.output.source}.`,
+        );
+      } else {
+        set({ llmRecsLoading: false, llmRecsError: data.error ?? 'Recommendation fetch failed.' });
+      }
+    } catch (err) {
+      console.error('[store] fetchLLMRecommendations error:', err);
+      set({ llmRecsLoading: false, llmRecsError: 'Network error fetching recommendations.' });
+    }
+  },
+
+  // ── Fetch Alert Drafts ────────────────────────────────────────────────────
+  fetchAlertDrafts: async () => {
+    const { incident, llmRecommendations } = get();
+    set({ alertDraftsLoading: true, alertDraftsError: null });
+    try {
+      const res = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incident, llmRecommendations }),
+      });
+      const data = await res.json() as { success: boolean; drafts?: LLMAlertDrafts; error?: string };
+      if (data.success && data.drafts) {
+        set({
+          alertDrafts: {
+            vms: data.drafts.vms,
+            social: data.drafts.social,
+            sms: data.drafts.sms,
+            source: data.drafts.source,
+          },
+          alertDraftsLoading: false,
+          alertDraftsError: null,
+        });
+        get()._addTimelineEvent('alert', `LLM generated alert drafts. Provider: ${data.drafts.source}.`);
+      } else {
+        set({ alertDraftsLoading: false, alertDraftsError: data.error ?? 'Alert draft fetch failed.' });
+      }
+    } catch (err) {
+      console.error('[store] fetchAlertDrafts error:', err);
+      set({ alertDraftsLoading: false, alertDraftsError: 'Network error fetching alert drafts.' });
+    }
+  },
+
+  // ── Chat Engine ──────────────────────────────────────────────────────────
   sendChatMessage: (text) => {
     const msgId = `msg-${Date.now()}`;
     const loadingId = `sys-${Date.now()}`;
-    const { incident } = get();
+    const { incident, llmRecommendations } = get();
 
     // Push user message + loading bubble
     set(state => ({
@@ -153,39 +277,40 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
 
     get()._addTimelineEvent('chat', `Operator query: "${text.substring(0, 60)}"`);
 
-    // Build short recent history for context (last 4 exchange pairs)
-    const recentMessages = get().chatMessages.slice(-8).map(m => ({
+    // Build short recent history (last 6 exchange pairs)
+    const recentMessages = get().chatMessages.slice(-12).map(m => ({
       role: m.sender as 'user' | 'system',
       text: m.text,
     }));
 
-    // Call backend /api/chat with full incident context
+    // Call backend /api/chat with full incident context + LLM recommendations
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: text,
-        incidentLat: incident.location.lat,
-        incidentLng: incident.location.lng,
-        incidentRoad: incident.location.desc ?? '',
+        incident,
+        llmRecommendations,
         recentMessages,
       }),
     })
       .then(res => res.json())
-      .then((data: { success: boolean; answer?: string; error?: string }) => {
+      .then((data: { success: boolean; answer?: string; source?: string; error?: string }) => {
         const answer = data.success && data.answer
           ? data.answer
-          : (data.error ?? buildChatResponse(text, get().incident)); // offline fallback
+          : (data.error ?? 'LLM co-pilot unavailable. Please retry.');
 
         set(state => ({
           chatMessages: state.chatMessages.map(m =>
-            m.id === loadingId ? { ...m, text: answer, isLoading: false, timestamp: ts() } : m
+            m.id === loadingId
+              ? { ...m, text: answer, isLoading: false, timestamp: ts(), source: (data.source as 'llm' | 'mock-engine') ?? 'mock-engine' }
+              : m
           )
         }));
       })
       .catch(() => {
-        // Network down — use local fallback so UI is never stuck
-        const fallback = buildChatResponse(text, get().incident);
+        // Network failure fallback
+        const fallback = buildOfflineChatFallback(text, incident);
         set(state => ({
           chatMessages: state.chatMessages.map(m =>
             m.id === loadingId ? { ...m, text: fallback, isLoading: false, timestamp: ts() } : m
@@ -194,7 +319,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
       });
   },
 
-  // ── Alert Publishing ─────────────────────────
+  // ── Alert Publishing ─────────────────────────────────────────────────────
   publishAlert: (channel) => {
     set(state => ({
       incident: {
@@ -209,14 +334,14 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     get()._addTimelineEvent('alert', `Public alert published via ${labels[channel] || channel}.`);
   },
 
-  // ── Simulation Engine ────────────────────────
+  // ── Simulation Engine ────────────────────────────────────────────────────
   simulateTick: () => {
     set(state => {
       const elapsed = state.incident.simulationElapsed + 30;
       const hasActiveStrat = state.incident.strategies.some(s => s.status === 'approved');
+      const hasActiveLLMRec = state.llmRecommendations.some(r => r.status === 'active' || r.status === 'approved');
 
-      // Deterministic reduction: faster clearance if strategy is active
-      const reduction = hasActiveStrat ? 1 : 0;
+      const reduction = (hasActiveStrat || hasActiveLLMRec) ? 1 : 0;
       const newClearance = Math.max(0, state.incident.estimatedClearance - reduction);
       const newStatus = newClearance === 0 ? 'cleared' : (newClearance < 20 ? 'resolving' : 'active');
 
@@ -230,7 +355,6 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
       };
     });
 
-    // Every 2 minutes of sim time, log a simulation event
     const elapsed = get().incident.simulationElapsed;
     if (elapsed % 120 === 0 && elapsed > 0) {
       const clearance = get().incident.estimatedClearance;
@@ -242,7 +366,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     if (simInterval) return;
     simInterval = setInterval(() => {
       get().simulateTick();
-    }, 5000); // Every 5 real seconds = 30 sim seconds
+    }, 5000);
     set({ isSimRunning: true });
     get()._addTimelineEvent('simulation', 'Live simulation started.');
   },
@@ -253,3 +377,17 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
     get()._addTimelineEvent('simulation', 'Live simulation paused by operator.');
   }
 }));
+
+// ─────────────────────────────────────────────
+// Offline chat fallback (network unavailable)
+// ─────────────────────────────────────────────
+function buildOfflineChatFallback(text: string, incident: IncidentState): string {
+  const q = text.toLowerCase();
+  if (q.includes('lane') || q.includes('safe') || q.includes('open')) {
+    return `SAFETY ADVISORY: Emergency services active on ${incident.location.desc}. ${incident.blockedLanes}/${incident.totalLanes} lanes blocked. Lane re-opening not permitted until on-scene clearance. [Offline mode — LLM unavailable]`;
+  }
+  if (q.includes('diversion') || q.includes('route')) {
+    return `DIVERSION ADVISORY: Use Sardar Patel Ring Road diversion. Approve LLM Recommendation #1 in the Decision Support panel. [Offline mode — LLM unavailable]`;
+  }
+  return `QUERY PROCESSED (offline): ${incident.title}. Status: ${incident.status.toUpperCase()}. Clearance ETA: ${incident.estimatedClearance} min. [LLM co-pilot unavailable — check network]`;
+}
