@@ -4,16 +4,31 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSimulationStore } from '@/lib/store';
-import { RadioTower, Send, CheckCircle2 } from 'lucide-react';
+import { RadioTower, Send, CheckCircle2, RefreshCw, Sparkles } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function AlertsGenerator() {
-  const { incident, publishAlert } = useSimulationStore();
+  const {
+    incident,
+    alertDrafts,
+    alertDraftsLoading,
+    alertDraftsError,
+    fetchAlertDrafts,
+    publishAlert,
+  } = useSimulationStore();
+
   const [activeTab, setActiveTab] = useState('vms');
 
-  const vmsDraft = `ACCIDENT AHEAD\nGJ-27 NEAR PDEU MAIN GATE\nUSE RING ROAD ALT ROUTE\nEXPECT ${incident.estimatedClearance} MIN DELAY`;
-  const socialDraft = `[TRAFFIC ALERT] Multi-vehicle collision on Koba-Gandhinagar Hwy, near PDEU Main Gate, Sector-23.\n\nSTATUS: ${incident.blockedLanes} of ${incident.totalLanes} lanes blocked.\nACTION: Emergency crews on scene. Avoid area; use Sardar Patel Ring Road as alternate route.\nEST DELAY: ${incident.estimatedClearance} mins.`;
-  const smsDraft = `PDEU/GJ Alert: Severe crash near PDEU Main Gate, Koba-Gandhinagar Hwy. Heavy delays expected for ${incident.estimatedClearance} mins. Use Ring Road alternate.`;
+  // Use LLM drafts if available, otherwise fall back to templates
+  const vmsDraft    = alertDrafts?.vms    ?? `ACCIDENT AHEAD\nGJ-27 NEAR PDEU MAIN GATE\nUSE RING ROAD ALT ROUTE\nEXPECT ${incident.estimatedClearance} MIN DELAY`;
+  const socialDraft = alertDrafts?.social ?? `[TRAFFIC ALERT] Multi-vehicle collision on Koba-Gandhinagar Hwy, near PDEU Main Gate, Sector-23.\n\nSTATUS: ${incident.blockedLanes} of ${incident.totalLanes} lanes blocked.\nACTION: Emergency crews on scene. Avoid area; use Sardar Patel Ring Road as alternate route.\nEST DELAY: ${incident.estimatedClearance} mins. #TrafficAlert #Gandhinagar`;
+  const smsDraft    = alertDrafts?.sms    ?? `PDEU/GJ Alert: Severe crash near PDEU Main Gate, Koba-Gandhinagar Hwy. Heavy delays expected for ${incident.estimatedClearance} mins. Use Ring Road alternate.`;
+
+  const sourceBadge = alertDrafts?.source === 'gemini'
+    ? <span className="flex items-center gap-1 text-[10px] font-bold text-violet-700 uppercase tracking-widest bg-violet-50 px-2 py-0.5 rounded border border-violet-200"><Sparkles size={10} /> LLM</span>
+    : alertDrafts?.source === 'mock'
+    ? <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-200">Mock</span>
+    : null;
 
   const renderPublishBadge = (published: boolean) =>
     published ? (
@@ -29,9 +44,9 @@ export default function AlertsGenerator() {
   };
 
   const isCurrentPublished = () => {
-    if (activeTab === 'vms') return incident.alerts.vmsPublished;
+    if (activeTab === 'vms')    return incident.alerts.vmsPublished;
     if (activeTab === 'social') return incident.alerts.socialPublished;
-    if (activeTab === 'sms') return incident.alerts.smsPublished;
+    if (activeTab === 'sms')    return incident.alerts.smsPublished;
     return false;
   };
 
@@ -39,37 +54,42 @@ export default function AlertsGenerator() {
     <div className="flex-1 flex flex-col bg-white overflow-hidden h-full w-full">
       <div className="flex-1 flex flex-col w-full h-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full">
-          {/* Tabs Header with unified publish button */}
+
+          {/* Tabs header */}
           <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-2 shrink-0">
             <TabsList className="bg-transparent border-none justify-start h-14 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
-              <TabsTrigger
-                value="vms"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
-              >
+              <TabsTrigger value="vms"    className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max">
                 VMS Panel
                 {incident.alerts.vmsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
-              <TabsTrigger
-                value="social"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
-              >
+              <TabsTrigger value="social" className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max">
                 Social
                 {incident.alerts.socialPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
-              <TabsTrigger
-                value="sms"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
-              >
+              <TabsTrigger value="sms"    className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max">
                 SMS
                 {incident.alerts.smsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex items-center gap-3 pr-3 shrink-0">
+            <div className="flex items-center gap-2 pr-3 shrink-0">
+              {sourceBadge}
               {renderPublishBadge(isCurrentPublished())}
+              {/* Generate button */}
               <Button
                 size="sm"
-                disabled={isCurrentPublished()}
+                variant="outline"
+                disabled={alertDraftsLoading}
+                onClick={fetchAlertDrafts}
+                className="h-9 text-xs bg-white hover:bg-violet-50 text-violet-700 hover:text-violet-800 font-bold uppercase tracking-wider px-4 py-0 rounded border border-violet-200 hover:border-violet-300 transition-colors shadow-sm disabled:opacity-50"
+              >
+                <RefreshCw size={13} className={`mr-1.5 ${alertDraftsLoading ? 'animate-spin' : ''}`} />
+                {alertDraftsLoading ? 'Generating…' : 'Generate'}
+              </Button>
+              {/* Publish button */}
+              <Button
+                size="sm"
+                disabled={isCurrentPublished() || alertDraftsLoading}
                 onClick={handlePublish}
                 className="h-9 text-xs bg-white hover:bg-slate-100 text-slate-700 hover:text-blue-700 font-bold uppercase tracking-wider px-5 py-0 rounded border border-slate-300 transition-colors disabled:opacity-50 shadow-sm"
               >
@@ -79,6 +99,14 @@ export default function AlertsGenerator() {
             </div>
           </div>
 
+          {/* Error banner */}
+          {alertDraftsError && (
+            <div className="px-4 py-2 text-xs text-red-700 bg-red-50 border-b border-red-100">
+              {alertDraftsError}
+            </div>
+          )}
+
+          {/* VMS */}
           <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-6 bg-white overflow-y-auto">
             <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-6 rounded-md w-full shadow-sm min-h-[min-content]">
               <span className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 block border-b border-slate-200 pb-3 shrink-0">
@@ -90,18 +118,22 @@ export default function AlertsGenerator() {
             </div>
           </TabsContent>
 
+          {/* Social */}
           <TabsContent value="social" className="m-0 flex-1 flex flex-col p-6 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-base resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-[200px] ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={socialDraft}
+              key={socialDraft}
               readOnly={incident.alerts.socialPublished}
             />
           </TabsContent>
 
+          {/* SMS */}
           <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-6 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-50 border-slate-200 text-base resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-5 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors min-h-[120px] ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={smsDraft}
+              key={smsDraft}
               readOnly={incident.alerts.smsPublished}
             />
           </TabsContent>
