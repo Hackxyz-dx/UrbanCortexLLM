@@ -51,7 +51,7 @@ function SidebarBtn({
     <button
       onClick={onClick}
       title={label}
-      className={`w-full py-4 flex flex-col items-center justify-center gap-1.5 transition-all border-l-4 group
+      className={`w-full py-4 flex flex-col items-center justify-center gap-1.5 transition-all border-l-4 group shrink-0
         ${active
           ? 'bg-blue-50 text-blue-700 border-blue-600 shadow-inner'
           : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 border-transparent'}`}
@@ -77,20 +77,20 @@ export default function DashboardPage() {
   const rightVisible = panels.chat || panels.alerts;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-100 text-slate-800 overflow-hidden font-sans selection:bg-blue-100">
+    <div className="flex flex-col md:flex-row min-h-screen w-full bg-slate-50 text-slate-800 font-sans selection:bg-blue-100">
 
-      {/* ── Sidebar ────────────────────────────────────────────────────── */}
-      <nav className="w-full h-auto md:w-[90px] md:h-full flex flex-row md:flex-col items-center justify-around md:justify-start py-0 md:py-0 bg-white border-t md:border-t-0 md:border-r border-slate-200 shadow-sm z-30 shrink-0 order-last md:order-first">
+      {/* ── Sidebar (Sticky) ──────────────────────────────────────────────── */}
+      <nav className="w-full h-auto md:w-[90px] md:h-screen md:sticky md:top-0 flex flex-row md:flex-col items-center justify-start bg-white border-b md:border-b-0 md:border-r border-slate-200 shadow-sm z-30 shrink-0 order-last md:order-first overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
 
         {/* Logo */}
-        <div className="w-full py-5 flex items-center justify-center border-b border-slate-100 mb-2 hidden md:flex">
+        <div className="w-full py-5 flex items-center justify-center border-b border-slate-100 mb-2 hidden md:flex shrink-0">
           <div className="w-12 h-12 bg-blue-700 text-white rounded shadow-sm flex items-center justify-center font-bold text-xl leading-none cursor-default select-none">
             UC
           </div>
         </div>
 
         {/* Panel toggles */}
-        <div className="flex flex-row md:flex-col items-center md:flex-1 w-full overflow-y-auto">
+        <div className="flex flex-row md:flex-col items-center md:flex-1 w-full min-w-max md:min-w-0">
           <SidebarBtn
             icon={<ShieldAlert size={24} />}
             label="Summary"
@@ -130,18 +130,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom: user avatar */}
-        <div className="hidden md:flex md:mt-auto py-5 items-center justify-center border-t border-slate-100 w-full">
+        <div className="hidden md:flex py-5 items-center justify-center border-t border-slate-100 w-full shrink-0">
           <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer">
             <UserCircle size={24} className="text-slate-600" />
           </div>
         </div>
       </nav>
 
-      {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-hidden">
+      {/* ── Main area (Scrollable) ────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-100/50">
 
-        {/* Top Navbar */}
-        <header className="h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 z-20 shrink-0">
+        {/* Top Navbar (Sticky) */}
+        <header className="h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 z-20 shrink-0 sticky top-0 w-full">
           <div className="flex items-center gap-4 min-w-0">
             <div className="w-8 h-8 bg-blue-700 text-white rounded flex items-center justify-center shrink-0 md:hidden font-bold text-sm shadow-sm">UC</div>
             <h1 className="text-lg font-bold tracking-wide text-slate-800 flex items-center gap-2 truncate whitespace-nowrap">
@@ -166,80 +166,88 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Dashboard Grid */}
-        <div className="flex-1 flex flex-col xl:flex-row p-0 xl:p-2 gap-2 overflow-y-auto xl:overflow-hidden min-w-0 bg-slate-100/50">
+        {/* Dashboard Flow Grid */}
+        <div className="flex-1 flex flex-col xl:flex-row p-3 md:p-4 gap-4 min-w-0">
 
-          {/* ── Left panel ────────────────────────────────────────────── */}
+          {/* ── Left column ───────────────────────────────────────────── */}
           {leftVisible && (
-            <aside className="w-full xl:w-[420px] flex flex-col gap-2 z-10 xl:overflow-y-auto shrink-0 order-1">
+            <aside className={`w-full flex flex-col gap-4 shrink-0 order-1 transition-all duration-300 ${centerVisible || rightVisible ? 'xl:w-[440px]' : 'xl:flex-1'}`}>
 
               {panels.incident && (
-                <section className="bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14">
+                <section className="bg-white rounded-md shadow-sm border border-slate-200 flex flex-col">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 shrink-0">
                     <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
                       <ShieldAlert size={18} className="text-slate-400" />
                       Incident Summary
                     </h2>
                   </div>
-                  <IncidentSummary />
+                  <div className="flex flex-col">
+                    <IncidentSummary />
+                  </div>
                 </section>
               )}
 
               {panels.recommendations && (
-                <section className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[400px]">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14">
+                <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 shrink-0">
                     <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
                       <LayoutDashboard size={18} className="text-slate-400" />
                       Decision Support
                     </h2>
                   </div>
-                  <AIRecommendations />
+                  <div className="flex flex-col">
+                    <AIRecommendations />
+                  </div>
                 </section>
               )}
             </aside>
           )}
 
-          {/* ── Center panel ──────────────────────────────────────────── */}
+          {/* ── Center column ─────────────────────────────────────────── */}
           {centerVisible && (
-            <main className="w-full xl:flex-1 flex flex-col gap-2 relative min-w-0 shrink-0 order-2">
+            <main className="w-full xl:flex-1 flex flex-col gap-4 relative min-w-0 shrink-0 order-2 transition-all duration-300">
               {panels.map && (
-                <div className="flex-1 relative z-0 min-h-[400px] rounded-md shadow-sm border border-slate-200 overflow-hidden bg-white">
+                <div className="relative z-0 min-h-[500px] xl:min-h-[600px] rounded-md shadow-sm border border-slate-200 bg-white">
                   <MapWidget />
                 </div>
               )}
               {panels.log && (
-                <div className="h-[280px] shrink-0 rounded-md shadow-sm border border-slate-200 overflow-hidden bg-white">
+                <div className="flex flex-col min-h-[400px] rounded-md shadow-sm border border-slate-200 bg-white">
                   <OperationLog />
                 </div>
               )}
             </main>
           )}
 
-          {/* ── Right panel ───────────────────────────────────────────── */}
+          {/* ── Right column ──────────────────────────────────────────── */}
           {rightVisible && (
-            <aside className="w-full xl:w-[440px] flex flex-col gap-2 z-10 xl:overflow-y-auto shrink-0 order-3">
+            <aside className={`w-full flex flex-col gap-4 shrink-0 order-3 transition-all duration-300 ${centerVisible || leftVisible ? 'xl:w-[440px]' : 'xl:flex-1'}`}>
 
               {panels.chat && (
-                <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14">
+                <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200 min-h-[600px]">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 shrink-0">
                     <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
                       <MessageSquare size={18} className="text-slate-400" />
                       Tactical Support Chat
                     </h2>
                   </div>
-                  <CopilotChat />
+                  <div className="flex-1 flex flex-col">
+                    <CopilotChat />
+                  </div>
                 </section>
               )}
 
               {panels.alerts && (
-                <section className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[350px]">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14">
+                <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200 min-h-[500px]">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 shrink-0">
                     <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
                       <Radio size={18} className="text-slate-400" />
                       Public Comm Drafts
                     </h2>
                   </div>
-                  <AlertsGenerator />
+                  <div className="flex-1 flex flex-col">
+                    <AlertsGenerator />
+                  </div>
                 </section>
               )}
             </aside>
@@ -247,7 +255,7 @@ export default function DashboardPage() {
 
           {/* ── All panels hidden: fallback ───────────────────────────── */}
           {!leftVisible && !centerVisible && !rightVisible && (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-white rounded-md border border-slate-200 shadow-sm border-dashed m-2">
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-white rounded-md border border-slate-200 shadow-sm border-dashed min-h-[500px]">
               <LayoutDashboard size={48} className="mb-4 text-slate-300 opacity-50" />
               <div className="text-lg font-medium tracking-wide">Dashboard is empty</div>
               <div className="text-base mt-1">Use the sidebar to open panels.</div>

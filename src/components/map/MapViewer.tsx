@@ -39,7 +39,7 @@ function routeStyle(route: AlternateRoute, index: number) {
   }
   // A* primary (likely the blocked direct route): red dashed
   if (label.includes('direct') || label.includes('primary')) {
-    return { color: '#ef4444', weight: 4, dashArray: '6, 6' as string | undefined, opacity: 0.8 };
+    return { color: '#ef4444', weight: 5, dashArray: '6, 6' as string | undefined, opacity: 0.8 };
   }
   // Additional alternates: muted colors
   const altColors = ['#8b5cf6', '#f59e0b', '#10b981'];
@@ -81,14 +81,14 @@ export default function MapViewer() {
       {/* ── Incident markers (from backend) ──────────────────────────────── */}
       {incidents.map(inc => (
         <Marker key={inc.id} position={[inc.location.lat, inc.location.lng]} icon={incidentIcon}>
-          <Popup className="text-slate-700 text-sm p-1">
-            <strong className="text-slate-900 block mb-1">{inc.title}</strong>
-            <span className="block text-xs mb-2 text-slate-500">{inc.affectedRoadName}</span>
-            <div className="flex gap-2 text-xs">
+          <Popup className="text-slate-700 text-base p-2">
+            <strong className="text-slate-900 block mb-1 text-lg">{inc.title}</strong>
+            <span className="block text-sm mb-3 text-slate-500">{inc.affectedRoadName}</span>
+            <div className="flex gap-2 text-sm mb-1">
               <span className="font-medium">Severity:</span>
               <span className="text-red-600 uppercase font-bold">{inc.severity}</span>
             </div>
-            <div className="flex gap-2 text-xs mt-1">
+            <div className="flex gap-2 text-sm mt-1">
               <span className="font-medium">Clearance:</span>
               <span className="font-semibold text-amber-600">{inc.estimatedClearance} min</span>
             </div>
@@ -102,10 +102,10 @@ export default function MapViewer() {
           position={[storeIncident.location.lat, storeIncident.location.lng]}
           icon={incidentIcon}
         >
-          <Popup className="text-slate-700 text-sm p-1">
-            <strong className="text-slate-900 block mb-1">{storeIncident.title}</strong>
-            <span className="block text-xs mb-2 text-slate-500">{storeIncident.location.desc}</span>
-            <div className="flex gap-2 text-xs">
+          <Popup className="text-slate-700 text-base p-2">
+            <strong className="text-slate-900 block mb-1 text-lg">{storeIncident.title}</strong>
+            <span className="block text-sm mb-3 text-slate-500">{storeIncident.location.desc}</span>
+            <div className="flex gap-2 text-sm">
               <span className="font-medium">Severity:</span>
               <span className="text-red-600 uppercase font-bold">{storeIncident.severity}</span>
             </div>
@@ -127,18 +127,18 @@ export default function MapViewer() {
             dashArray={style.dashArray}
             opacity={style.opacity}
           >
-            <Popup className="text-slate-700 text-sm p-1">
-              <strong className="text-slate-900 block mb-2">{route.label}</strong>
-              <div className="flex justify-between gap-4 text-xs mb-1">
+            <Popup className="text-slate-700 text-base p-2">
+              <strong className="text-slate-900 block mb-3 text-lg">{route.label}</strong>
+              <div className="flex justify-between gap-5 text-sm mb-2">
                 <span className="font-medium text-slate-500">Distance:</span>
                 <span className="font-bold">{(route.totalDistanceM / 1000).toFixed(1)} km</span>
               </div>
-              <div className="flex justify-between gap-4 text-xs mb-2">
+              <div className="flex justify-between gap-5 text-sm mb-3">
                 <span className="font-medium text-slate-500">Est. Time:</span>
                 <span className="font-bold text-amber-600">{Math.round(route.totalTravelTimeSec / 60)} min</span>
               </div>
               {route.isRecommended && (
-                <div className="mt-2 pt-2 border-t border-slate-100 text-blue-600 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                <div className="mt-3 pt-3 border-t border-slate-100 text-blue-600 font-bold text-sm uppercase tracking-wider flex items-center gap-1.5">
                   ✓ Recommended Diversion
                 </div>
               )}
@@ -153,7 +153,7 @@ export default function MapViewer() {
         const color = route.type === 'primary' ? '#ef4444'
           : route.type === 'emergency-corridor' ? '#10b981'
           : isApprovedDiversion ? '#2563eb' : '#64748b';
-        const weight = isApprovedDiversion ? 6 : route.type === 'primary' ? 5 : 4;
+        const weight = isApprovedDiversion ? 6 : route.type === 'primary' ? 6 : 4;
         const dashArray = (!isApprovedDiversion && route.type === 'diversion') ? '6, 6' : undefined;
 
         return (
@@ -165,15 +165,15 @@ export default function MapViewer() {
             dashArray={dashArray}
             opacity={0.85}
           >
-            <Popup className="text-slate-700 text-sm p-1">
-              <strong className="text-slate-900 block mb-1">{route.name}</strong>
-              <div className="text-xs text-slate-500 mb-2 capitalize">{route.type} Route</div>
-              <div className="flex justify-between gap-4 text-xs mb-2">
+            <Popup className="text-slate-700 text-base p-2">
+              <strong className="text-slate-900 block mb-2 text-lg">{route.name}</strong>
+              <div className="text-sm text-slate-500 mb-3 capitalize">{route.type} Route</div>
+              <div className="flex justify-between gap-5 text-sm mb-3">
                 <span className="font-medium text-slate-500">Congestion:</span>
                 <span className="font-bold">{route.congestionLevel}</span>
               </div>
               {route.type === 'diversion' && route.id === 'r2' && (
-                <div className={`mt-2 pt-2 border-t border-slate-100 text-xs font-bold uppercase tracking-wider ${isApprovedDiversion ? 'text-blue-600' : 'text-slate-400'}`}>
+                <div className={`mt-3 pt-3 border-t border-slate-100 text-sm font-bold uppercase tracking-wider ${isApprovedDiversion ? 'text-blue-600' : 'text-slate-400'}`}>
                   {isApprovedDiversion ? '✓ Active — Diversion Live' : 'Pending Approval'}
                 </div>
               )}
@@ -184,16 +184,16 @@ export default function MapViewer() {
 
       {/* ── Loading overlay ───────────────────────────────────────────────── */}
       {isLoading && (
-        <div className="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-600 text-[10px] font-bold px-4 py-2 rounded shadow-sm uppercase tracking-widest flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+        <div className="absolute top-5 right-5 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-600 text-xs font-bold px-5 py-3 rounded shadow-sm uppercase tracking-widest flex items-center gap-2.5">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
           Fetching live map data...
         </div>
       )}
 
       {/* ── Error notice ──────────────────────────────────────────────────── */}
       {error && !isLoading && (
-        <div className="absolute top-4 right-4 z-[1000] bg-red-50/95 backdrop-blur-sm border border-red-200 text-red-700 text-[10px] font-bold px-4 py-2 rounded shadow-sm uppercase tracking-widest flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+        <div className="absolute top-5 right-5 z-[1000] bg-red-50/95 backdrop-blur-sm border border-red-200 text-red-700 text-xs font-bold px-5 py-3 rounded shadow-sm uppercase tracking-widest flex items-center gap-2.5">
+          <div className="w-2 h-2 bg-red-500 rounded-full" />
           {error}
         </div>
       )}

@@ -36,7 +36,7 @@ export default function AlertsGenerator() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden min-h-[300px]">
+    <div className="flex-1 flex flex-col bg-white overflow-hidden h-full w-full">
       <div className="flex-1 flex flex-col w-full h-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full">
           {/* Tabs Header with unified publish button */}
@@ -44,21 +44,21 @@ export default function AlertsGenerator() {
             <TabsList className="bg-transparent border-none justify-start h-14 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
               <TabsTrigger
                 value="vms"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
               >
                 VMS Panel
                 {incident.alerts.vmsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
               <TabsTrigger
                 value="social"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
               >
                 Social
                 {incident.alerts.socialPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
               </TabsTrigger>
               <TabsTrigger
                 value="sms"
-                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none"
+                className="text-sm uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-6 text-slate-500 hover:text-slate-700 relative shadow-none min-w-max"
               >
                 SMS
                 {incident.alerts.smsPublished && <span className="absolute top-3 right-3 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
@@ -80,8 +80,8 @@ export default function AlertsGenerator() {
           </div>
 
           <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-6 bg-white overflow-y-auto">
-            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-6 rounded-md w-full shadow-sm">
-              <span className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 block border-b border-slate-200 pb-3">
+            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-6 rounded-md w-full shadow-sm min-h-[min-content]">
+              <span className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-4 block border-b border-slate-200 pb-3 shrink-0">
                 Hardware Preview: VMS Board GJ-27 (PDEU Campus Junction)
               </span>
               <pre className={`font-mono text-center leading-[1.8] text-base md:text-lg font-bold bg-[#1a1a1a] w-full py-10 px-5 rounded border-2 tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors shadow-inner ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>

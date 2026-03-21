@@ -31,14 +31,14 @@ export default function CopilotChat() {
   };
 
   return (
-    <div className="bg-white flex flex-col flex-1 overflow-hidden min-h-[350px]">
+    <div className="bg-white flex flex-col h-full w-full overflow-hidden">
       <div className="flex-1 overflow-hidden flex flex-col relative w-full">
         <ScrollArea className="flex-1 w-full" ref={scrollRef}>
           <div className="flex flex-col p-5 w-full max-w-full overflow-hidden">
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`py-3 flex gap-3.5 text-base items-start mb-5 overflow-hidden w-full ${
+                className={`py-3 flex gap-3.5 text-base items-start mb-5 w-full ${
                   msg.sender === 'user' ? '' : ''
                 }`}
               >
@@ -63,7 +63,7 @@ export default function CopilotChat() {
               <button
                 key={i}
                 onClick={() => handleSend(q)}
-                className="text-sm font-medium bg-white hover:bg-slate-100 border border-slate-200 transition-colors text-slate-600 hover:text-slate-800 px-4 py-2 rounded-full text-left truncate max-w-full shadow-sm"
+                className="text-sm font-medium bg-white hover:bg-slate-100 border border-slate-200 transition-colors text-slate-600 hover:text-slate-800 px-4 py-2 rounded-full text-left truncate max-w-full shadow-sm shrink-0"
                 title={q}
               >
                 {q}
