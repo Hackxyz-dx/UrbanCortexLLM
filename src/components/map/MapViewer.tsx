@@ -35,15 +35,15 @@ function routeStyle(route: AlternateRoute, index: number) {
 
   // Recommended diversion: solid blue
   if (route.isRecommended) {
-    return { color: '#2563eb', weight: 5, dashArray: undefined as string | undefined, opacity: 0.9 };
+    return { color: '#2563eb', weight: 6, dashArray: undefined as string | undefined, opacity: 0.9 };
   }
   // A* primary (likely the blocked direct route): red dashed
   if (label.includes('direct') || label.includes('primary')) {
-    return { color: '#ef4444', weight: 4, dashArray: '6, 6' as string | undefined, opacity: 0.75 };
+    return { color: '#ef4444', weight: 4, dashArray: '6, 6' as string | undefined, opacity: 0.8 };
   }
   // Additional alternates: muted colors
-  const altColors = ['#a855f7', '#f59e0b', '#10b981'];
-  return { color: altColors[index % altColors.length], weight: 3, dashArray: '4, 8' as string | undefined, opacity: 0.7 };
+  const altColors = ['#8b5cf6', '#f59e0b', '#10b981'];
+  return { color: altColors[index % altColors.length], weight: 4, dashArray: '4, 8' as string | undefined, opacity: 0.75 };
 }
 
 // ─── Main viewer ─────────────────────────────────────────────────────────────
@@ -67,11 +67,11 @@ export default function MapViewer() {
     <MapContainer
       center={[centerLat, centerLng]}
       zoom={14}
-      className="w-full h-full z-0"
+      className="w-full h-full z-0 font-sans"
       zoomControl={true}
     >
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://carto.com/">CARTO</a>'
       />
 
@@ -81,11 +81,17 @@ export default function MapViewer() {
       {/* ── Incident markers (from backend) ──────────────────────────────── */}
       {incidents.map(inc => (
         <Marker key={inc.id} position={[inc.location.lat, inc.location.lng]} icon={incidentIcon}>
-          <Popup className="text-black">
-            <strong>{inc.title}</strong><br />
-            {inc.affectedRoadName}<br />
-            Severity: <span className="text-red-600 uppercase text-xs font-bold">{inc.severity}</span><br />
-            Clearance: <span className="font-semibold">{inc.estimatedClearance} min</span>
+          <Popup className="text-slate-700 text-sm p-1">
+            <strong className="text-slate-900 block mb-1">{inc.title}</strong>
+            <span className="block text-xs mb-2 text-slate-500">{inc.affectedRoadName}</span>
+            <div className="flex gap-2 text-xs">
+              <span className="font-medium">Severity:</span>
+              <span className="text-red-600 uppercase font-bold">{inc.severity}</span>
+            </div>
+            <div className="flex gap-2 text-xs mt-1">
+              <span className="font-medium">Clearance:</span>
+              <span className="font-semibold text-amber-600">{inc.estimatedClearance} min</span>
+            </div>
           </Popup>
         </Marker>
       ))}
@@ -96,10 +102,13 @@ export default function MapViewer() {
           position={[storeIncident.location.lat, storeIncident.location.lng]}
           icon={incidentIcon}
         >
-          <Popup className="text-black">
-            <strong>{storeIncident.title}</strong><br />
-            {storeIncident.location.desc}<br />
-            Severity: <span className="text-red-600 uppercase text-xs font-bold">{storeIncident.severity}</span>
+          <Popup className="text-slate-700 text-sm p-1">
+            <strong className="text-slate-900 block mb-1">{storeIncident.title}</strong>
+            <span className="block text-xs mb-2 text-slate-500">{storeIncident.location.desc}</span>
+            <div className="flex gap-2 text-xs">
+              <span className="font-medium">Severity:</span>
+              <span className="text-red-600 uppercase font-bold">{storeIncident.severity}</span>
+            </div>
           </Popup>
         </Marker>
       )}
@@ -118,11 +127,21 @@ export default function MapViewer() {
             dashArray={style.dashArray}
             opacity={style.opacity}
           >
-            <Popup className="text-black text-sm">
-              <strong>{route.label}</strong><br />
-              Distance: {(route.totalDistanceM / 1000).toFixed(1)} km<br />
-              Est. time: {Math.round(route.totalTravelTimeSec / 60)} min<br />
-              {route.isRecommended && <span className="text-blue-600 font-bold">✓ Recommended diversion</span>}
+            <Popup className="text-slate-700 text-sm p-1">
+              <strong className="text-slate-900 block mb-2">{route.label}</strong>
+              <div className="flex justify-between gap-4 text-xs mb-1">
+                <span className="font-medium text-slate-500">Distance:</span>
+                <span className="font-bold">{(route.totalDistanceM / 1000).toFixed(1)} km</span>
+              </div>
+              <div className="flex justify-between gap-4 text-xs mb-2">
+                <span className="font-medium text-slate-500">Est. Time:</span>
+                <span className="font-bold text-amber-600">{Math.round(route.totalTravelTimeSec / 60)} min</span>
+              </div>
+              {route.isRecommended && (
+                <div className="mt-2 pt-2 border-t border-slate-100 text-blue-600 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                  ✓ Recommended Diversion
+                </div>
+              )}
             </Popup>
           </Polyline>
         );
@@ -133,9 +152,9 @@ export default function MapViewer() {
         const isApprovedDiversion = route.type === 'diversion' && route.id === 'r2' && isStratApproved;
         const color = route.type === 'primary' ? '#ef4444'
           : route.type === 'emergency-corridor' ? '#10b981'
-          : isApprovedDiversion ? '#2563eb' : '#94a3b8';
-        const weight = isApprovedDiversion ? 5 : route.type === 'primary' ? 5 : 3;
-        const dashArray = (!isApprovedDiversion && route.type === 'diversion') ? '8, 8' : undefined;
+          : isApprovedDiversion ? '#2563eb' : '#64748b';
+        const weight = isApprovedDiversion ? 6 : route.type === 'primary' ? 5 : 4;
+        const dashArray = (!isApprovedDiversion && route.type === 'diversion') ? '6, 6' : undefined;
 
         return (
           <Polyline
@@ -146,14 +165,17 @@ export default function MapViewer() {
             dashArray={dashArray}
             opacity={0.85}
           >
-            <Popup className="text-black text-sm">
-              <strong>{route.name}</strong><br />
-              Type: {route.type}<br />
-              Congestion: {route.congestionLevel}<br />
+            <Popup className="text-slate-700 text-sm p-1">
+              <strong className="text-slate-900 block mb-1">{route.name}</strong>
+              <div className="text-xs text-slate-500 mb-2 capitalize">{route.type} Route</div>
+              <div className="flex justify-between gap-4 text-xs mb-2">
+                <span className="font-medium text-slate-500">Congestion:</span>
+                <span className="font-bold">{route.congestionLevel}</span>
+              </div>
               {route.type === 'diversion' && route.id === 'r2' && (
-                <span className={isApprovedDiversion ? 'text-blue-600 font-bold' : 'text-gray-500'}>
-                  {isApprovedDiversion ? '✓ ACTIVE — Diversion Live' : 'Pending Approval'}
-                </span>
+                <div className={`mt-2 pt-2 border-t border-slate-100 text-xs font-bold uppercase tracking-wider ${isApprovedDiversion ? 'text-blue-600' : 'text-slate-400'}`}>
+                  {isApprovedDiversion ? '✓ Active — Diversion Live' : 'Pending Approval'}
+                </div>
               )}
             </Popup>
           </Polyline>
@@ -162,14 +184,16 @@ export default function MapViewer() {
 
       {/* ── Loading overlay ───────────────────────────────────────────────── */}
       {isLoading && (
-        <div className="absolute top-3 right-3 z-[1000] bg-slate-900/90 border border-slate-700 text-slate-400 text-[10px] font-mono px-3 py-1.5 rounded-sm uppercase tracking-widest">
-          Fetching map data...
+        <div className="absolute top-4 right-4 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-600 text-[10px] font-bold px-4 py-2 rounded shadow-sm uppercase tracking-widest flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+          Fetching live map data...
         </div>
       )}
 
       {/* ── Error notice ──────────────────────────────────────────────────── */}
       {error && !isLoading && (
-        <div className="absolute top-3 right-3 z-[1000] bg-red-950/90 border border-red-800 text-red-400 text-[10px] font-mono px-3 py-1.5 rounded-sm uppercase tracking-widest">
+        <div className="absolute top-4 right-4 z-[1000] bg-red-50/95 backdrop-blur-sm border border-red-200 text-red-700 text-[10px] font-bold px-4 py-2 rounded shadow-sm uppercase tracking-widest flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
           {error}
         </div>
       )}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSimulationStore } from '@/lib/store';
@@ -18,8 +17,8 @@ export default function AlertsGenerator() {
 
   const renderPublishBadge = (published: boolean) =>
     published ? (
-      <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 uppercase tracking-widest">
-        <CheckCircle2 size={10} /> Published
+      <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+        <CheckCircle2 size={12} /> Published
       </span>
     ) : null;
 
@@ -37,74 +36,71 @@ export default function AlertsGenerator() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950 border-0 rounded-none overflow-hidden">
-      <div className="p-3 border-b border-slate-800 bg-slate-900 flex justify-between items-center h-10">
-        <h3 className="text-[11px] font-bold text-slate-300 uppercase flex items-center gap-2 tracking-widest">
-          <RadioTower size={14} className="text-slate-500" />
-          Public Comm Drafts
-        </h3>
-        <div className="flex items-center gap-3">
-          {renderPublishBadge(isCurrentPublished())}
-          <Button
-            size="sm"
-            disabled={isCurrentPublished()}
-            onClick={handlePublish}
-            className="h-6 text-[10px] bg-slate-800 hover:bg-emerald-700 text-slate-300 hover:text-white font-bold uppercase tracking-wider px-3 py-0 rounded-sm border border-slate-700 hover:border-emerald-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Send size={10} className="mr-1.5" />
-            {isCurrentPublished() ? 'Sent' : 'Publish'}
-          </Button>
-        </div>
-      </div>
+    <div className="flex-1 flex flex-col bg-white overflow-hidden min-h-[300px]">
+      <div className="flex-1 flex flex-col w-full h-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col w-full">
+          {/* Tabs Header with unified publish button */}
+          <div className="flex flex-wrap items-center justify-between border-b border-slate-200 bg-slate-50 px-2 shrink-0">
+            <TabsList className="bg-transparent border-none justify-start h-12 p-0 rounded-none overflow-x-auto w-auto flex-nowrap">
+              <TabsTrigger
+                value="vms"
+                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+              >
+                VMS Panel
+                {incident.alerts.vmsPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+              </TabsTrigger>
+              <TabsTrigger
+                value="social"
+                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+              >
+                Social
+                {incident.alerts.socialPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+              </TabsTrigger>
+              <TabsTrigger
+                value="sms"
+                className="text-xs uppercase tracking-widest font-bold data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none h-full px-5 text-slate-500 hover:text-slate-700 relative shadow-none"
+              >
+                SMS
+                {incident.alerts.smsPublished && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full shadow-sm" />}
+              </TabsTrigger>
+            </TabsList>
 
-      <div className="flex-1 flex flex-col">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsList className="bg-slate-950 border-b border-slate-800 w-full justify-start h-9 p-0 rounded-none">
-            <TabsTrigger
-              value="vms"
-              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
-            >
-              VMS Panel
-              {incident.alerts.vmsPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
-            </TabsTrigger>
-            <TabsTrigger
-              value="social"
-              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
-            >
-              Social
-              {incident.alerts.socialPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
-            </TabsTrigger>
-            <TabsTrigger
-              value="sms"
-              className="text-[10px] uppercase tracking-widest font-bold data-[state=active]:bg-slate-900 data-[state=active]:text-slate-200 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none h-full px-4 text-slate-500 hover:text-slate-400 relative"
-            >
-              SMS
-              {incident.alerts.smsPublished && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />}
-            </TabsTrigger>
-          </TabsList>
+            <div className="flex items-center gap-3 pr-2 shrink-0">
+              {renderPublishBadge(isCurrentPublished())}
+              <Button
+                size="sm"
+                disabled={isCurrentPublished()}
+                onClick={handlePublish}
+                className="h-8 text-[11px] bg-white hover:bg-slate-100 text-slate-700 hover:text-blue-700 font-bold uppercase tracking-wider px-4 py-0 rounded border border-slate-300 transition-colors disabled:opacity-50 shadow-sm"
+              >
+                <Send size={12} className="mr-1.5" />
+                {isCurrentPublished() ? 'Sent' : 'Publish'}
+              </Button>
+            </div>
+          </div>
 
-          <TabsContent value="vms" className="m-0 flex-1 flex flex-col min-w-0 p-4 bg-slate-950">
-            <Card className="bg-slate-900 border-slate-800 flex-1 flex flex-col p-4 rounded-sm min-w-0 overflow-hidden shadow-none">
-              <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-3 block border-b border-slate-800 pb-2">
+          <TabsContent value="vms" className="m-0 flex-1 flex flex-col p-5 bg-white overflow-y-auto">
+            <div className="border border-slate-200 bg-slate-50 flex-1 flex flex-col p-5 rounded-md w-full shadow-sm">
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 block border-b border-slate-200 pb-2">
                 Hardware Preview: VMS Board GJ-27 (PDEU Campus Junction)
               </span>
-              <pre className={`font-mono text-center leading-[1.8] text-sm font-bold bg-[#0a0500] w-full py-6 px-4 rounded-sm border tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-900/60' : 'text-amber-500 border-amber-900/40'}`}>
+              <pre className={`font-mono text-center leading-[1.8] text-sm md:text-base font-bold bg-[#1a1a1a] w-full py-8 px-4 rounded-sm border-2 tracking-widest uppercase whitespace-pre-wrap flex-1 flex items-center justify-center transition-colors shadow-inner ${incident.alerts.vmsPublished ? 'text-emerald-400 border-emerald-500/50' : 'text-amber-400 border-amber-500/50'}`}>
                 {vmsDraft}
               </pre>
-            </Card>
+            </div>
           </TabsContent>
 
-          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-4 bg-slate-950">
+          <TabsContent value="social" className="m-0 flex-1 flex flex-col p-5 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-900 border-slate-800 text-[12px] resize-none font-sans p-3 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 rounded-sm shadow-none transition-colors ${incident.alerts.socialPublished ? 'text-emerald-400' : 'text-slate-300'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.socialPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={socialDraft}
               readOnly={incident.alerts.socialPublished}
             />
           </TabsContent>
 
-          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-4 bg-slate-950">
+          <TabsContent value="sms" className="m-0 flex-1 flex flex-col p-5 bg-white">
             <Textarea
-              className={`w-full flex-1 bg-slate-900 border-slate-800 text-[12px] resize-none font-sans p-3 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 rounded-sm shadow-none transition-colors ${incident.alerts.smsPublished ? 'text-emerald-400' : 'text-slate-300'}`}
+              className={`w-full flex-1 bg-slate-50 border-slate-200 text-sm resize-none font-sans p-4 leading-relaxed focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500 rounded-md shadow-sm transition-colors ${incident.alerts.smsPublished ? 'text-emerald-700 font-medium bg-emerald-50/30' : 'text-slate-700'}`}
               defaultValue={smsDraft}
               readOnly={incident.alerts.smsPublished}
             />
