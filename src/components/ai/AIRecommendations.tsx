@@ -2,7 +2,6 @@
 
 import { useSimulationStore } from '@/lib/store';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,152 +15,165 @@ export default function AIRecommendations() {
   const activeStrats  = incident.strategies.filter(s => s.status === 'approved');
 
   return (
-    <Card className="bg-slate-950 border-0 rounded-none flex flex-col flex-1 overflow-hidden">
-      <CardHeader className="px-4 py-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-10">
-        <CardTitle className="text-[11px] font-bold text-slate-300 uppercase flex flex-wrap items-center justify-between tracking-wide gap-2">
-          <span className="text-slate-400">Decision Support</span>
-          <div className="flex items-center gap-2">
-            {isLoading && (
-              <span className="text-[9px] text-slate-600 font-mono uppercase animate-pulse">Fetching…</span>
-            )}
-            <button onClick={refresh} title="Refresh recommendations" className="text-slate-600 hover:text-slate-400 transition-colors">
-              <RotateCcw size={11} />
-            </button>
-            <Badge variant="secondary" className="bg-slate-800 text-slate-400 text-[9px] uppercase font-mono tracking-widest border border-slate-700 px-1.5 py-0 rounded-sm">
-              {pendingStrats.length} Pending
-            </Badge>
-          </div>
-        </CardTitle>
-      </CardHeader>
+    <div className="flex flex-col flex-1 overflow-hidden bg-white">
+      {/* ── Sub-header actions ────────────────────────────────────────── */}
+      <div className="px-5 py-2.5 border-b border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="text-xs font-semibold text-slate-500 flex items-center gap-2">
+          {isLoading ? (
+            <span className="uppercase tracking-widest text-[10px] animate-pulse">Running analysis...</span>
+          ) : (
+            <span className="uppercase tracking-widest text-[10px]">Model ready</span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={refresh} title="Re-run analysis" className="text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1.5 focus:outline-none">
+            <RotateCcw size={14} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Refresh</span>
+          </button>
+          <Badge variant="secondary" className="bg-white text-slate-600 text-[10px] uppercase font-bold tracking-widest border border-slate-200 px-2.5 py-0.5 rounded-sm shadow-sm">
+            {pendingStrats.length} Pending
+          </Badge>
+        </div>
+      </div>
 
-      <CardContent className="p-0 flex-1 overflow-hidden flex flex-col bg-slate-950">
-        <ScrollArea className="h-full w-full p-4">
-          <div className="flex flex-col gap-4">
+      <ScrollArea className="flex-1 w-full p-5">
+        <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden">
 
-            {/* ── Live backend recommendation ────────────────────────────── */}
-            {!isLoading && !error && recommendation && (
-              <div className="flex flex-col gap-3">
+          {/* ── Live backend recommendation ────────────────────────────── */}
+          {!isLoading && !error && recommendation && (
+            <div className="flex flex-col gap-3">
 
-                {/* Diversion card */}
-                {recommendation.diversion && (
-                  <div className="border border-blue-900/50 bg-blue-950/20 p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Navigation size={13} className="text-blue-400 shrink-0" />
-                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                        Recommended Diversion
-                      </span>
-                      <span className="ml-auto text-[9px] font-mono text-slate-600">
-                        {(recommendation.confidence * 100).toFixed(0)}% confidence
-                      </span>
-                    </div>
-                    <div className="text-[13px] font-bold text-slate-200 mb-1">
-                      {recommendation.diversion.routeLabel}
-                    </div>
-                    <div className="flex gap-4 mb-3 text-[10px] font-mono text-slate-400">
-                      <span>{recommendation.diversion.distanceKm} km</span>
-                      <span>{Math.round(recommendation.diversion.estimatedTimeSec / 60)} min est.</span>
-                      {meta && <span className="text-slate-600">{meta.road}</span>}
-                    </div>
-                    <div className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800 pt-2">
-                      {recommendation.diversion.reason}
-                    </div>
-                  </div>
-                )}
-
-                {/* Operational explanation */}
-                <div className="border border-slate-800 bg-slate-900 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Info size={12} className="text-slate-500 shrink-0" />
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Operational Assessment
+              {/* Diversion card */}
+              {recommendation.diversion && (
+                <div className="border border-blue-200 bg-blue-50/50 rounded-md p-4 w-full">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Navigation size={16} className="text-blue-600 shrink-0" />
+                    <span className="text-[11px] font-bold text-blue-800 uppercase tracking-widest">
+                      Recommended Diversion
+                    </span>
+                    <span className="ml-auto text-[11px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-sm">
+                      {(recommendation.confidence * 100).toFixed(0)}% Conf.
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    {recommendation.explanation}
-                  </p>
-                </div>
-
-                {/* Public alert summary */}
-                <div className="border border-amber-900/40 bg-amber-950/10 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle size={12} className="text-amber-500 shrink-0" />
-                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
-                      Alert Summary
-                    </span>
+                  <div className="text-base font-bold text-slate-800 mb-1.5 leading-snug break-words pr-2">
+                    {recommendation.diversion.routeLabel}
                   </div>
-                  <p className="text-[11px] text-amber-200/70 leading-relaxed font-mono">
-                    {recommendation.alertSummary}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-3 mb-4 text-xs font-semibold text-slate-500">
+                    <span className="bg-white border border-slate-200 px-2 py-0.5 rounded-sm shadow-sm">{recommendation.diversion.distanceKm} km</span>
+                    <span className="bg-white border border-slate-200 px-2 py-0.5 rounded-sm shadow-sm text-slate-700">{Math.round(recommendation.diversion.estimatedTimeSec / 60)} min est.</span>
+                    {meta && <span className="text-slate-400 truncate ...">{meta.road}</span>}
+                  </div>
+                  <div className="text-sm text-slate-600 leading-relaxed border-t border-blue-200/60 pt-3">
+                    {recommendation.diversion.reason}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* ── Error state ────────────────────────────────────────────── */}
-            {error && (
-              <div className="border border-red-900/40 bg-red-950/20 p-4 text-[11px] text-red-400">
-                {error}
-              </div>
-            )}
-
-            {/* ── Approved strategies from store ────────────────────────── */}
-            {activeStrats.map(strat => (
-              <div key={strat.id} className="border-l-2 border-emerald-600 bg-slate-900 p-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 size={14} className="text-emerald-500" />
-                  <h4 className="text-[11px] font-bold text-slate-200 uppercase tracking-widest">
-                    Active: {strat.name}
-                  </h4>
+              {/* Operational explanation */}
+              <div className="border border-slate-200 bg-white rounded-md p-4 shadow-sm w-full">
+                <div className="flex items-center gap-2 mb-2">
+                  <Info size={16} className="text-slate-400 shrink-0" />
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    Operational Assessment
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed mt-2">
-                  IoT control sequences linked to this strategy are currently engaged.
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {recommendation.explanation}
                 </p>
               </div>
-            ))}
 
-            {/* ── Pending strategies from store (approve/reject) ─────────── */}
-            {pendingStrats.map(strat => (
-              <div key={strat.id} className="border border-slate-800 bg-slate-900 p-4">
-                <div className="flex justify-between items-start mb-3 gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="text-[11px] font-mono font-bold text-blue-400 bg-blue-950/50 px-1.5 py-0.5 rounded-sm">
-                      #{strat.rank}
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-200 tracking-tight">{strat.name}</h4>
-                  </div>
-                  <div className="text-[10px] text-slate-500 font-mono flex flex-col items-end shrink-0">
-                    <span className="uppercase tracking-widest text-slate-600 text-[8px]">Confidence</span>
-                    <span>{(strat.overallConfidence * 100).toFixed(0)}%</span>
-                  </div>
+              {/* Public alert summary */}
+              <div className="border border-amber-200 bg-amber-50 rounded-md p-4 w-full">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle size={16} className="text-amber-600 shrink-0" />
+                  <span className="text-[11px] font-bold text-amber-700 uppercase tracking-widest">
+                    Alert Summary
+                  </span>
                 </div>
-
-                <ul className="space-y-2 mb-4">
-                  {strat.actions.map(a => (
-                    <li key={a.id} className="bg-slate-950/50 p-2.5 border border-slate-800/80">
-                      <div className="text-[11px] font-bold text-slate-300 mb-1">{a.title}</div>
-                      <div className="text-[11px] text-slate-500 mb-1 leading-snug">{a.description}</div>
-                      <div className="flex gap-2 text-[10px]">
-                        <span className="font-bold text-slate-600 uppercase tracking-wider shrink-0">Impact:</span>
-                        <span className="text-slate-400">{a.expectedImpact}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex justify-end pt-3 border-t border-slate-800">
-                  <Button
-                    size="sm"
-                    className="h-8 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 rounded-sm transition-colors"
-                    onClick={() => updateStrategyStatus(strat.id, 'approved')}
-                  >
-                    Approve &amp; Execute
-                  </Button>
-                </div>
+                <p className="text-sm text-amber-800 leading-relaxed font-mono font-medium">
+                  "{recommendation.alertSummary}"
+                </p>
               </div>
-            ))}
+            </div>
+          )}
 
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+          {/* ── Error state ────────────────────────────────────────────── */}
+          {error && (
+            <div className="border border-red-200 bg-red-50 text-red-600 rounded-md p-4 text-sm font-medium">
+              {error}
+            </div>
+          )}
+
+          {/* ── Approved strategies from store ────────────────────────── */}
+          {activeStrats.length > 0 && (
+            <div className="pt-2">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">Active Operations</h3>
+              {activeStrats.map(strat => (
+                <div key={strat.id} className="border border-emerald-200 bg-emerald-50 rounded-md p-4 mb-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                    <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider shrink-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                      {strat.name}
+                    </h4>
+                  </div>
+                  <p className="text-sm text-emerald-700/80 leading-relaxed ml-6">
+                    IoT control sequences linked to this strategy are currently engaged and active.
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Pending strategies from store (approve/reject) ─────────── */}
+          {pendingStrats.length > 0 && (
+            <div className="pt-2">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">Pending Executive Action</h3>
+              {pendingStrats.map(strat => (
+                <div key={strat.id} className="border border-slate-200 bg-white rounded-md shadow-sm p-5 mb-4 overflow-hidden w-full">
+                  <div className="flex flex-wrap justify-between items-start mb-4 gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="text-xs font-mono font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded border border-blue-200 shrink-0">
+                        OP-{strat.rank}
+                      </div>
+                      <h4 className="text-base font-bold text-slate-800 tracking-tight leading-snug break-words">
+                        {strat.name}
+                      </h4>
+                    </div>
+                    <div className="text-xs text-slate-500 font-mono flex flex-col items-end shrink-0">
+                      <span className="uppercase tracking-widest text-slate-400 text-[9px] mb-0.5">Rating</span>
+                      <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{(strat.overallConfidence * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-5">
+                    {strat.actions.map(a => (
+                      <div key={a.id} className="bg-slate-50 p-4 rounded border border-slate-100 w-full overflow-hidden">
+                        <div className="text-sm font-bold text-slate-700 mb-1.5">{a.title}</div>
+                        <div className="text-sm text-slate-600 mb-2 leading-relaxed">{a.description}</div>
+                        <div className="flex gap-2 text-xs items-center bg-white border border-slate-200 px-3 py-1.5 rounded w-fit max-w-full">
+                          <span className="font-bold text-slate-500 uppercase tracking-wider shrink-0">Impact:</span>
+                          <span className="text-slate-700 font-medium truncate">{a.expectedImpact}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t border-slate-100">
+                    <Button
+                      size="lg"
+                      className="text-sm bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded shadow-sm hover:shadow transition-all"
+                      onClick={() => updateStrategyStatus(strat.id, 'approved')}
+                    >
+                      Authorize &amp; Execute
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

@@ -32,9 +32,9 @@ export default function CopilotChat() {
   };
 
   return (
-    <Card className="bg-slate-950 border-0 rounded-none flex flex-col h-[350px] shrink-0">
-      <CardHeader className="p-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 h-10 flex flex-row items-center justify-between">
-        <CardTitle className="text-[11px] font-bold text-slate-300 uppercase flex items-center gap-2 tracking-widest leading-none">
+    <Card className="bg-slate-950 border-0 rounded-none flex flex-col h-[360px] shrink-0">
+      <CardHeader className="p-3 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 h-11 flex flex-row items-center justify-between">
+        <CardTitle className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2 tracking-widest leading-none">
           <Terminal size={14} className="text-slate-500" />
           Tactical Query Console
         </CardTitle>
@@ -46,12 +46,12 @@ export default function CopilotChat() {
             {chatMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`p-4 border-b border-slate-800/50 flex gap-3 text-[11px] items-start ${
+                className={`px-4 py-3 border-b border-slate-800/50 flex gap-3 text-sm items-start ${
                   msg.sender === 'user' ? 'bg-slate-900/30' : 'bg-slate-950'
                 }`}
               >
                 <div className={`shrink-0 text-[10px] font-bold tracking-widest uppercase mt-0.5 ${msg.sender === 'user' ? 'text-slate-500' : 'text-blue-500'}`}>
-                  {msg.sender === 'user' ? 'OPR :' : 'SYS :'}
+                  {msg.sender === 'user' ? 'OPR' : 'SYS'}
                 </div>
                 <div className={`leading-relaxed font-mono whitespace-pre-wrap break-words min-w-0 ${msg.isLoading ? 'text-slate-600 animate-pulse' : msg.sender === 'user' ? 'text-slate-300' : 'text-slate-400'}`}>
                   {msg.text}
@@ -67,7 +67,7 @@ export default function CopilotChat() {
               <button
                 key={i}
                 onClick={() => handleSend(q)}
-                className="text-[10px] font-mono bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors text-slate-400 hover:text-slate-300 px-2.5 py-1 rounded-sm text-left truncate max-w-full"
+                className="text-xs font-mono bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors text-slate-400 hover:text-slate-300 px-2.5 py-1 rounded-sm text-left truncate max-w-full"
                 title={q}
               >
                 &gt; {q}
@@ -82,7 +82,7 @@ export default function CopilotChat() {
               placeholder="Enter system query..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="h-8 text-[11px] font-mono bg-slate-900 border-slate-800 text-white placeholder:text-slate-600 rounded-sm focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 pr-8 shadow-none"
+              className="h-9 text-sm font-mono bg-slate-900 border-slate-800 text-white placeholder:text-slate-600 rounded-sm focus-visible:ring-1 focus-visible:ring-blue-600 focus-visible:border-blue-600 pr-8 shadow-none"
             />
             <Button
               type="submit"

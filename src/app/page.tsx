@@ -51,13 +51,15 @@ function SidebarBtn({
     <button
       onClick={onClick}
       title={label}
-      className={`w-10 h-10 flex flex-col items-center justify-center gap-0.5 rounded transition-colors group
+      className={`w-full py-3 flex flex-col items-center justify-center gap-1 transition-all border-l-4 group
         ${active
-          ? 'bg-blue-700/30 text-blue-400 border border-blue-700/50'
-          : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-transparent'}`}
+          ? 'bg-blue-50 text-blue-700 border-blue-600 shadow-inner'
+          : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 border-transparent'}`}
     >
       {icon}
-      <span className="text-[8px] font-bold uppercase tracking-widest leading-none">{label}</span>
+      <span className={`text-[10px] font-bold uppercase tracking-wider leading-none ${active ? 'text-blue-700' : 'text-slate-500 group-hover:text-slate-700'}`}>
+        {label}
+      </span>
     </button>
   );
 }
@@ -75,50 +77,52 @@ export default function DashboardPage() {
   const rightVisible = panels.chat || panels.alerts;
 
   return (
-    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-950 text-slate-200 overflow-hidden font-sans selection:bg-blue-900/50">
+    <div className="flex flex-col md:flex-row h-screen w-full bg-slate-100 text-slate-800 overflow-hidden font-sans selection:bg-blue-100">
 
       {/* ── Sidebar ────────────────────────────────────────────────────── */}
-      <nav className="w-full h-auto md:w-[72px] md:h-full flex flex-row md:flex-col items-center justify-around md:justify-start py-2 md:py-4 px-2 md:px-0 bg-slate-900 border-t md:border-t-0 md:border-r border-slate-800 z-30 shrink-0 order-last md:order-first gap-1 md:gap-2">
+      <nav className="w-full h-auto md:w-[80px] md:h-full flex flex-row md:flex-col items-center justify-around md:justify-start py-0 md:py-0 bg-white border-t md:border-t-0 md:border-r border-slate-200 shadow-sm z-30 shrink-0 order-last md:order-first">
 
         {/* Logo */}
-        <div className="w-10 h-10 bg-blue-700 text-white rounded flex items-center justify-center md:mb-4 shrink-0 hidden md:flex font-bold text-base leading-none cursor-default select-none">
-          UC
+        <div className="w-full py-4 flex items-center justify-center border-b border-slate-100 mb-2 hidden md:flex">
+          <div className="w-10 h-10 bg-blue-700 text-white rounded shadow-sm flex items-center justify-center font-bold text-lg leading-none cursor-default select-none">
+            UC
+          </div>
         </div>
 
         {/* Panel toggles */}
-        <div className="flex flex-row md:flex-col gap-1.5 md:gap-2 items-center md:flex-1">
+        <div className="flex flex-row md:flex-col items-center md:flex-1 w-full overflow-y-auto">
           <SidebarBtn
-            icon={<ShieldAlert size={16} />}
-            label="Incident"
+            icon={<ShieldAlert size={20} />}
+            label="Summary"
             active={panels.incident}
             onClick={() => toggle('incident')}
           />
           <SidebarBtn
-            icon={<LayoutDashboard size={16} />}
+            icon={<LayoutDashboard size={20} />}
             label="Strategy"
             active={panels.recommendations}
             onClick={() => toggle('recommendations')}
           />
           <SidebarBtn
-            icon={<MapIcon size={16} />}
-            label="Map"
+            icon={<MapIcon size={20} />}
+            label="Map View"
             active={panels.map}
             onClick={() => toggle('map')}
           />
           <SidebarBtn
-            icon={<Clock size={16} />}
-            label="Log"
+            icon={<Clock size={20} />}
+            label="Timeline"
             active={panels.log}
             onClick={() => toggle('log')}
           />
           <SidebarBtn
-            icon={<MessageSquare size={16} />}
+            icon={<MessageSquare size={20} />}
             label="Chat"
             active={panels.chat}
             onClick={() => toggle('chat')}
           />
           <SidebarBtn
-            icon={<Radio size={16} />}
+            icon={<Radio size={20} />}
             label="Alerts"
             active={panels.alerts}
             onClick={() => toggle('alerts')}
@@ -126,54 +130,55 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom: user avatar */}
-        <div className="hidden md:flex md:mt-auto items-center justify-center pb-2">
-          <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center">
-            <UserCircle size={18} className="text-slate-400" />
+        <div className="hidden md:flex md:mt-auto py-4 items-center justify-center border-t border-slate-100 w-full">
+          <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer">
+            <UserCircle size={20} className="text-slate-600" />
           </div>
         </div>
       </nav>
 
       {/* ── Main area ──────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 bg-slate-950 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-hidden">
 
         {/* Top Navbar */}
-        <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:px-5 z-20 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 bg-blue-700 text-white rounded flex items-center justify-center shrink-0 md:hidden font-bold text-sm">UC</div>
-            <h1 className="text-sm font-bold tracking-wide text-slate-200 uppercase flex items-center gap-2 truncate">
-              UrbanCortexLLM <span className="text-slate-600 font-normal text-xs">—</span>
-              <span className="font-normal text-slate-400 text-xs normal-case hidden sm:inline">Traffic Incident Command</span>
+        <header className="h-14 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 z-20 shrink-0">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-8 h-8 bg-blue-700 text-white rounded flex items-center justify-center shrink-0 md:hidden font-bold text-sm shadow-sm">UC</div>
+            <h1 className="text-[15px] font-bold tracking-wide text-slate-800 flex items-center gap-2 truncate whitespace-nowrap">
+              UrbanCortexLLM
+              <span className="text-slate-300 font-normal hidden sm:inline">|</span>
+              <span className="font-medium text-slate-500 text-sm hidden sm:inline">Traffic Incident Command</span>
             </h1>
-            <div className="h-4 w-px bg-slate-700 mx-1 shrink-0" />
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-emerald-950/40 border border-emerald-900/50 shrink-0">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-bold text-emerald-400 tracking-widest uppercase">Live</span>
+            <div className="h-5 w-px bg-slate-200 mx-2 shrink-0 hidden md:block" />
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-100 shrink-0">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm animate-pulse" />
+              <span className="text-[11px] font-bold text-emerald-700 tracking-widest uppercase">Live System</span>
             </div>
-            <span className="hidden md:block text-xs font-mono text-slate-500 ml-1">PDEU Gandhinagar, GJ</span>
+            <span className="hidden lg:block text-xs font-medium text-slate-500 ml-2">PDEU Gandhinagar, Gujarat</span>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-5 shrink-0">
             <LiveClock />
             <SimControls />
-            <button className="relative text-slate-400 hover:text-slate-200 transition-colors">
-              <Bell size={17} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-slate-900" />
+            <button className="relative text-slate-500 hover:text-slate-800 transition-colors">
+              <Bell size={20} />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm" />
             </button>
           </div>
         </header>
 
         {/* Dashboard Grid */}
-        <div className="flex-1 flex flex-col xl:flex-row overflow-y-auto xl:overflow-hidden min-w-0">
+        <div className="flex-1 flex flex-col xl:flex-row p-0 xl:p-2 gap-2 overflow-y-auto xl:overflow-hidden min-w-0 bg-slate-100/50">
 
           {/* ── Left panel ────────────────────────────────────────────── */}
           {leftVisible && (
-            <aside className="w-full xl:w-[380px] flex flex-col border-b xl:border-b-0 xl:border-r border-slate-800 bg-slate-950 z-10 xl:overflow-y-auto shrink-0 order-1">
+            <aside className="w-full xl:w-[400px] flex flex-col gap-2 z-10 xl:overflow-y-auto shrink-0 order-1">
 
               {panels.incident && (
-                <section>
-                  <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-900 flex items-center h-11">
-                    <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                      <ShieldAlert size={13} className="text-slate-500" />
-                      Incident Context
+                <section className="bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-12">
+                    <h2 className="text-sm font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2">
+                      <ShieldAlert size={16} className="text-slate-400" />
+                      Incident Summary
                     </h2>
                   </div>
                   <IncidentSummary />
@@ -181,10 +186,10 @@ export default function DashboardPage() {
               )}
 
               {panels.recommendations && (
-                <section className="flex-1 flex flex-col overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-900 flex items-center h-11">
-                    <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                      <LayoutDashboard size={13} className="text-slate-500" />
+                <section className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[400px]">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-12">
+                    <h2 className="text-sm font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2">
+                      <LayoutDashboard size={16} className="text-slate-400" />
                       Decision Support
                     </h2>
                   </div>
@@ -196,26 +201,30 @@ export default function DashboardPage() {
 
           {/* ── Center panel ──────────────────────────────────────────── */}
           {centerVisible && (
-            <main className="w-full xl:flex-1 flex flex-col relative bg-slate-900 min-w-0 shrink-0 order-2">
+            <main className="w-full xl:flex-1 flex flex-col gap-2 relative min-w-0 shrink-0 order-2">
               {panels.map && (
-                <div className="flex-1 relative z-0 min-h-0" style={{ minHeight: '350px' }}>
+                <div className="flex-1 relative z-0 min-h-[400px] rounded-md shadow-sm border border-slate-200 overflow-hidden bg-white">
                   <MapWidget />
                 </div>
               )}
-              {panels.log && <OperationLog />}
+              {panels.log && (
+                <div className="h-[250px] shrink-0 rounded-md shadow-sm border border-slate-200 overflow-hidden bg-white">
+                  <OperationLog />
+                </div>
+              )}
             </main>
           )}
 
           {/* ── Right panel ───────────────────────────────────────────── */}
           {rightVisible && (
-            <aside className="w-full xl:w-[410px] flex flex-col border-t xl:border-t-0 xl:border-l border-slate-800 bg-slate-950 z-10 xl:overflow-y-auto shrink-0 order-3">
+            <aside className="w-full xl:w-[420px] flex flex-col gap-2 z-10 xl:overflow-y-auto shrink-0 order-3">
 
               {panels.chat && (
-                <section className="flex flex-col">
-                  <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-900 flex items-center h-11">
-                    <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                      <MessageSquare size={13} className="text-slate-500" />
-                      Tactical Query Console
+                <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-12">
+                    <h2 className="text-sm font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2">
+                      <MessageSquare size={16} className="text-slate-400" />
+                      Tactical Support Chat
                     </h2>
                   </div>
                   <CopilotChat />
@@ -223,10 +232,10 @@ export default function DashboardPage() {
               )}
 
               {panels.alerts && (
-                <section className="flex-1 flex flex-col overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-900 flex items-center h-11">
-                    <h2 className="text-xs font-bold tracking-widest text-slate-300 uppercase flex items-center gap-2">
-                      <Radio size={13} className="text-slate-500" />
+                <section className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[350px]">
+                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-12">
+                    <h2 className="text-sm font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2">
+                      <Radio size={16} className="text-slate-400" />
                       Public Comm Drafts
                     </h2>
                   </div>
@@ -238,8 +247,10 @@ export default function DashboardPage() {
 
           {/* ── All panels hidden: fallback ───────────────────────────── */}
           {!leftVisible && !centerVisible && !rightVisible && (
-            <div className="flex-1 flex items-center justify-center text-slate-600 text-sm font-mono uppercase tracking-widest">
-              All panels hidden — use sidebar to restore
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-white rounded-md border border-slate-200 shadow-sm border-dashed m-2">
+              <LayoutDashboard size={48} className="mb-4 text-slate-300 opacity-50" />
+              <div className="text-base font-medium tracking-wide">Dashboard is empty</div>
+              <div className="text-sm mt-1">Use the sidebar to open panels.</div>
             </div>
           )}
 
