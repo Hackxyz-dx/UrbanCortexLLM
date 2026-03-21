@@ -8,7 +8,6 @@
 import type { AlternateRoute, RouteType } from '@/types/maps';
 import { type RoadGraph } from './graph';
 import { type AStarResult, pathToGeometry } from './astar';
-import { edgeCost } from './graph';
 
 /**
  * Converts an AStarResult into a normalized AlternateRoute suitable for
