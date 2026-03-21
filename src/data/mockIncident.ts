@@ -48,7 +48,6 @@ export interface IncidentState {
   routes: RouteGeometry[];
   strategies: ResponseStrategy[];
   recommendations: Recommendation[]; // Kept for legacy compatibility if needed
-  timeline: { time: string; event: string }[];
 }
 
 export const initialMockIncident: IncidentState = {
@@ -148,10 +147,5 @@ export const initialMockIncident: IncidentState = {
       ]
     }
   ],
-  recommendations: [],
-  timeline: [
-    { time: '10:14 AM', event: 'Initial crash detected via Waze crowd-source' },
-    { time: '10:16 AM', event: 'CCTV confirmed multi-vehicle collision, 3 lanes blocked' },
-    { time: '10:18 AM', event: 'AI Co-Pilot engaged, calculating incident impact' }
-  ]
+  recommendations: []
 };
