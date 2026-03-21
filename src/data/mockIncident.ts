@@ -20,6 +20,21 @@ export interface Recommendation {
   status: ActionStatus;
 }
 
+export interface ResponseStrategy {
+  id: string;
+  name: string;
+  rank: number;
+  overallConfidence: number;
+  metrics: {
+    queueReduction: string;
+    delayReduction: string;
+    secondaryCrashRisk: string;
+    complexity: 'Low' | 'Medium' | 'High';
+  };
+  actions: Recommendation[];
+  status: ActionStatus;
+}
+
 export interface IncidentState {
   id: string;
   title: string;
@@ -31,7 +46,8 @@ export interface IncidentState {
   vehiclesInvolved: number;
   estimatedClearance: number; // minutes
   routes: RouteGeometry[];
-  recommendations: Recommendation[];
+  strategies: ResponseStrategy[];
+  recommendations: Recommendation[]; // Kept for legacy compatibility if needed
   timeline: { time: string; event: string }[];
 }
 
@@ -70,38 +86,69 @@ export const initialMockIncident: IncidentState = {
       ]
     }
   ],
-  recommendations: [
+  strategies: [
     {
-      id: 'rec-1',
-      type: 'diversion',
-      title: 'Activate Columbus Blvd Diversion',
-      description: 'Route all non-essential northbound traffic to Columbus Blvd.',
-      reasoning: 'I-95 main queue is growing at 2 miles/hr. Columbus Blvd has 40% spare capacity.',
-      expectedImpact: '-15 mins avg delay, reduces secondary accident risk.',
-      confidence: 0.92,
-      status: 'pending'
+      id: 'strat-1',
+      name: 'Aggressive Diversion & Retiming',
+      rank: 1,
+      overallConfidence: 0.94,
+      status: 'pending',
+      metrics: {
+        queueReduction: '-1.4 mi',
+        delayReduction: '-22 mins',
+        secondaryCrashRisk: '-42%',
+        complexity: 'Medium'
+      },
+      actions: [
+        {
+          id: 'rec-1',
+          type: 'diversion',
+          title: 'Activate Columbus Blvd Diversion',
+          description: 'Route all non-essential northbound traffic to Columbus Blvd.',
+          reasoning: 'Columbus Blvd has 40% spare capacity.',
+          expectedImpact: 'Moves 600 vph off I-95 main queue.',
+          confidence: 0.92,
+          status: 'pending'
+        },
+        {
+          id: 'rec-2',
+          type: 'signal-timing',
+          title: 'Extend Green Phase on Columbus Blvd',
+          description: 'Increase N-S green timing by +15s at 4 intersections.',
+          reasoning: 'Required to accommodate diversion influx.',
+          expectedImpact: 'Prevents spillback onto local grid.',
+          confidence: 0.88,
+          status: 'pending'
+        }
+      ]
     },
     {
-      id: 'rec-2',
-      type: 'signal-timing',
-      title: 'Extend Green Phase on Columbus Blvd',
-      description: 'Increase N-S green timing by +15s at 4 intersections.',
-      reasoning: 'To handle the +600 vph expected from the diversion route.',
-      expectedImpact: 'Prevents spillback onto local grid.',
-      confidence: 0.88,
-      status: 'pending'
-    },
-    {
-      id: 'rec-3',
-      type: 'emergency-corridor',
-      title: 'Preserve Broad St for EMS',
-      description: 'Reserve right lane on Broad St for approaching ambulances.',
-      reasoning: 'Nearest trauma center is 12 mins away via Broad St. Current EMS delayed by 4 mins.',
-      expectedImpact: 'Reduces EMS arrival time by 30%.',
-      confidence: 0.95,
-      status: 'pending'
+      id: 'strat-2',
+      name: 'Local Reroute (Conservative)',
+      rank: 2,
+      overallConfidence: 0.78,
+      status: 'pending',
+      metrics: {
+        queueReduction: '-0.5 mi',
+        delayReduction: '-8 mins',
+        secondaryCrashRisk: '-15%',
+        complexity: 'Low'
+      },
+      actions: [
+        {
+          id: 'rec-3',
+          type: 'diversion',
+          title: 'Soft Diversion via Broad St',
+          description: 'Divert only commercial freight to Broad St.',
+          reasoning: 'Less disruptive to local grid but lower capacity.',
+          expectedImpact: 'Reduces heavy-vehicle braking accidents.',
+          confidence: 0.85,
+          status: 'pending'
+        }
+      ]
     }
   ],
+  recommendations: [],
   timeline: [
     { time: '10:14 AM', event: 'Initial crash detected via Waze crowd-source' },
     { time: '10:16 AM', event: 'CCTV confirmed multi-vehicle collision, 3 lanes blocked' },
