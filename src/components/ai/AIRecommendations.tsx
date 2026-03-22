@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useSimulationStore } from '@/lib/store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   CheckCircle2, Navigation, AlertTriangle, Info, RotateCcw,
   XCircle, Zap, Clock, ShieldCheck, Radio
@@ -207,12 +206,9 @@ export default function AIRecommendations() {
         </div>
       </div>
 
-      <div className="flex-1 relative min-h-0">
-        <div className="absolute inset-0">
-          <ScrollArea className="h-full w-full p-6">
-            <div className="flex flex-col gap-5 w-full max-w-full overflow-hidden">
-
-              {/* ── Error ─────────────────────────────────────────────────── */}
+      <div className="flex-1 w-full bg-white px-2 py-4 md:p-6 lg:p-8">
+        <div className="flex flex-col gap-6 w-full max-w-full">
+          {/* ── Error ─────────────────────────────────────────────────── */}
               {llmRecsError && (
                 <div className="border border-red-200 bg-red-50 text-red-700 rounded-lg p-4 text-sm font-medium">
                   {llmRecsError}
@@ -343,9 +339,7 @@ export default function AIRecommendations() {
               )}
 
             </div>
-          </ScrollArea>
         </div>
       </div>
-    </div>
   );
 }

@@ -13,7 +13,7 @@ import LiveClock from '@/components/dashboard/LiveClock';
 import NavbarNotifications from '@/components/dashboard/NavbarNotifications';
 import {
   LayoutDashboard, Map as MapIcon, ShieldAlert,
-  Bell, UserCircle, MessageSquare, Radio, Clock,
+  Bell, UserCircle, MessageSquare, Radio, Clock, X
 } from 'lucide-react';
 
 // ─── Panel IDs ────────────────────────────────────────────────────────────────
@@ -73,16 +73,16 @@ export default function DashboardPage() {
   const toggle = (id: PanelId) =>
     setPanels(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const leftVisible  = panels.incident || panels.recommendations;
+  const leftVisible = panels.incident || panels.recommendations;
   const centerVisible = panels.map || panels.log;
   const rightVisible = panels.chat || panels.alerts;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-slate-50 text-slate-800 font-sans selection:bg-blue-100">
-      
+
       {/* ── Sidebar (Fixed) ──────────────────────────────────────────────── */}
       <nav className="flex-shrink-0 w-full h-[72px] md:w-[90px] md:h-full flex flex-row md:flex-col items-center justify-start bg-white border-t md:border-t-0 md:border-r border-slate-200 shadow-sm z-30 order-last md:order-first overflow-x-auto md:overflow-y-auto scrollbar-hide">
-        
+
         {/* Logo */}
         <div className="w-full py-5 flex items-center justify-center border-b border-slate-100 mb-2 hidden md:flex flex-shrink-0">
           <div className="w-12 h-12 bg-blue-700 text-white rounded shadow-sm flex items-center justify-center font-bold text-xl leading-none cursor-default select-none">
@@ -139,10 +139,10 @@ export default function DashboardPage() {
       </nav>
 
       {/* ── Main Area (Fills remaining space) ────────────────────────────── */}
-      <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-100/50">
-        
-        {/* Top Navbar (Fixed) */}
-        <header className="flex-shrink-0 h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 z-20 w-full">
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-50 overflow-y-auto">
+
+        {/* Top Navbar (Sticky) */}
+        <header className="flex-shrink-0 h-16 bg-white border-b border-slate-200 shadow-sm flex items-center justify-between px-4 md:px-6 z-20 w-full sticky top-0">
           <div className="flex items-center gap-4 min-w-0">
             <div className="w-8 h-8 bg-blue-700 text-white rounded flex items-center justify-center flex-shrink-0 md:hidden font-bold text-sm shadow-sm">UC</div>
             <h1 className="text-lg font-bold tracking-wide text-slate-800 flex items-center gap-2 truncate whitespace-nowrap">
@@ -164,106 +164,102 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* ── Dashboard Columns Wrapper ───────────────────────────────── */}
-        <div className="flex-1 overflow-hidden p-3 md:p-4 min-h-0 flex flex-col">
-          <div className="flex flex-col lg:flex-row h-full w-full gap-4 overflow-hidden lg:pr-1 min-h-0">
+        {/* ── Dashboard Page Content ── */}
+        <div className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] w-full mx-auto flex flex-col gap-6 lg:gap-8 min-h-0">
 
-            {/* ── Left Column: Incident & Recs ────────────────────────────── */}
-            {leftVisible && (
-              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0 ${centerVisible || rightVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
-                {panels.incident && (
-                  <section className="bg-white rounded-md shadow-sm border border-slate-200 flex flex-col flex-shrink-0">
-                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">
-                      <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
-                        <ShieldAlert size={18} className="text-slate-400" />
-                        Incident Summary
-                      </h2>
-                    </div>
-                    <IncidentSummary />
-                  </section>
-                )}
-                {panels.recommendations && (
-                  <section className="flex flex-col bg-white rounded-md shadow-sm border border-slate-200 flex-1 min-h-[500px]">
-                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">
-                      <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
-                        <LayoutDashboard size={18} className="text-slate-400" />
-                        Decision Support
-                      </h2>
-                    </div>
-                    <div className="flex-1 flex flex-col overflow-hidden relative">
-                      <div className="absolute inset-0 w-full h-full flex flex-col">
-                         <AIRecommendations />
-                      </div>
-                    </div>
-                  </section>
-                )}
-              </aside>
+          {/* Row 1: Summary + Map */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            {panels.incident && (
+              <section className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center shrink-0 rounded-t-xl">
+                  <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
+                    <ShieldAlert size={18} className="text-slate-400" />
+                    Incident Summary
+                  </h2>
+                </div>
+                <IncidentSummary />
+              </section>
             )}
 
-            {/* ── Center Column: Map & Log ──────────────────────────────── */}
-            {centerVisible && (
-              <main className="w-full lg:flex-1 flex flex-col gap-4 min-w-0 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0">
-                {panels.map && (
-                  <div className="relative z-0 flex-1 min-h-[400px] rounded-md shadow-sm border border-slate-200 bg-white flex flex-col overflow-hidden">
-                    <MapWidget />
-                  </div>
-                )}
-                {panels.log && (
-                  <div className="flex flex-col h-[300px] flex-shrink-0 rounded-md shadow-sm border border-slate-200 bg-white overflow-hidden">
-                    <OperationLog />
-                  </div>
-                )}
-              </main>
+            {panels.map && (
+              <section className={`${panels.incident ? '' : 'lg:col-span-2'} bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[500px] lg:min-h-[600px] overflow-hidden`}>
+                <MapWidget />
+              </section>
             )}
-
-            {/* ── Right Column: Chat & Alerts ───────────────────────────── */}
-            {rightVisible && (
-              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0 ${centerVisible || leftVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
-                {panels.chat && (
-                  <section className="flex flex-col flex-1 min-h-[400px] bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">
-                      <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
-                        <MessageSquare size={18} className="text-slate-400" />
-                        Tactical Support Chat
-                      </h2>
-                    </div>
-                    <div className="flex-1 flex flex-col overflow-hidden relative">
-                      <div className="absolute inset-0 w-full h-full flex flex-col">
-                        <CopilotChat />
-                      </div>
-                    </div>
-                  </section>
-                )}
-                {panels.alerts && (
-                  <section className="flex flex-col flex-1 min-h-[400px] bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">
-                      <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
-                        <Radio size={18} className="text-slate-400" />
-                        Public Comm Drafts
-                      </h2>
-                    </div>
-                    <div className="flex-1 flex flex-col overflow-hidden relative">
-                      <div className="absolute inset-0 w-full h-full flex flex-col">
-                        <AlertsGenerator />
-                      </div>
-                    </div>
-                  </section>
-                )}
-              </aside>
-            )}
-
-            {/* ── All panels hidden: fallback ───────────────────────────── */}
-            {!leftVisible && !centerVisible && !rightVisible && (
-              <div className="w-full flex flex-col items-center justify-center text-slate-400 bg-white rounded-md border border-slate-200 shadow-sm border-dashed min-h-[500px]">
-                <LayoutDashboard size={48} className="mb-4 text-slate-300 opacity-50" />
-                <div className="text-lg font-medium tracking-wide">Dashboard is empty</div>
-                <div className="text-base mt-1">Use the sidebar to open panels.</div>
-              </div>
-            )}
-
           </div>
+
+          {/* Row 2: Strategy / Recommendations */}
+          {panels.recommendations && (
+            <section className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+              <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center shrink-0 rounded-t-xl">
+                <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
+                  <LayoutDashboard size={18} className="text-slate-400" />
+                  Decision Support
+                </h2>
+              </div>
+              <AIRecommendations />
+            </section>
+          )}
+
+          {/* Row 3: Ops Log, Alerts */}
+          {(panels.log || panels.alerts) && (
+            <div className={`grid grid-cols-1 gap-6 lg:gap-8 ${panels.log && panels.alerts ? 'xl:grid-cols-2 lg:grid-cols-2' : 'xl:grid-cols-1 lg:grid-cols-1'
+              }`}>
+
+              {panels.log && (
+                <section className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[400px] max-h-[600px] overflow-hidden">
+                  <OperationLog />
+                </section>
+              )}
+
+              {panels.alerts && (
+                <section className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[500px] overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center shrink-0 rounded-t-xl">
+                    <h2 className="text-base font-bold tracking-wide text-slate-700 uppercase flex items-center gap-2.5">
+                      <Radio size={18} className="text-slate-400" />
+                      Public Comm Drafts
+                    </h2>
+                  </div>
+                  <AlertsGenerator />
+                </section>
+              )}
+            </div>
+          )}
+
+          {/* Empty state wrapper */}
+          {!panels.incident && !panels.map && !panels.recommendations && !panels.log && !panels.chat && !panels.alerts && (
+            <div className="w-full flex flex-col items-center justify-center text-slate-400 bg-white rounded-xl border border-slate-200 shadow-sm border-dashed p-24">
+              <LayoutDashboard size={48} className="mb-4 text-slate-300 opacity-50" />
+              <div className="text-lg font-medium tracking-wide">Dashboard is empty</div>
+              <div className="text-base mt-1">Use the sidebar to open panels.</div>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* ── Right Sidebar: Copilot Chat ─────────────────────────────────── */}
+      {panels.chat && (
+        <aside className="w-full md:w-[360px] lg:w-[420px] flex-shrink-0 h-full bg-white border-l border-slate-200 shadow-2xl flex flex-col transition-all duration-300 z-40 relative">
+          <div className="h-16 border-b border-slate-200 flex items-center justify-between px-5 shrink-0 bg-white">
+            <h2 className="text-base font-bold tracking-wide text-slate-800 uppercase flex items-center gap-2.5">
+              <MessageSquare size={18} className="text-blue-600" />
+              Tactical Support Chat
+            </h2>
+            <button
+              onClick={() => toggle('chat')}
+              className="text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-2 rounded-full transition-colors"
+              title="Close Chat"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 bg-white">
+            <CopilotChat />
+          </div>
+        </aside>
+      )}
+
     </div>
   );
 }
