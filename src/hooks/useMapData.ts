@@ -8,12 +8,17 @@
  * Refresh behavior:
  *   - Initial fetch on mount
  *   - Re-fetches whenever the incident location changes (e.g. simulation tick)
- *   - Returns loading / error / data states for the map to render conditionally
+ *   - Polls every POLL_INTERVAL_MS while the browser tab is visible
+ *   - Pauses polling when the tab is hidden; resumes on tab focus
+ *   - In-flight guard prevents overlapping concurrent fetches
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSimulationStore } from '@/lib/store';
 import type { TrafficIncident, AlternateRoute } from '@/types/maps';
+
+/** How often to re-fetch while the tab is visible (ms). */
+const POLL_INTERVAL_MS = 30_000;
 
 export interface MapDataState {
   isLoading: boolean;
@@ -37,13 +42,17 @@ export function useMapData(): MapDataState & { refresh: () => void } {
   const incidentLocation = useSimulationStore(s => s.incident.location);
   const [state, setState] = useState<MapDataState>(INITIAL_STATE);
 
+  // Guard: skip a scheduled poll if a fetch is already in-flight
+  const isFetching = useRef(false);
+
   const fetchData = useCallback(async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
 
     const { lat, lng } = incidentLocation;
 
     try {
-      // Fetch incidents and routes in parallel
       const [incRes, routeRes] = await Promise.allSettled([
         fetch(`/api/incidents?lat=${lat}&lng=${lng}&radius=5000`),
         fetch(`/api/routes?incidentLat=${lat}&incidentLng=${lng}&radius=3000`),
@@ -79,11 +88,34 @@ export function useMapData(): MapDataState & { refresh: () => void } {
         isLoading: false,
         error: 'Failed to load map data from backend.',
       }));
+    } finally {
+      isFetching.current = false;
     }
   }, [incidentLocation.lat, incidentLocation.lng]);
 
   useEffect(() => {
+    // Initial fetch
     fetchData();
+
+    // Polling interval — only fires when tab is visible
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, POLL_INTERVAL_MS);
+
+    // Resume immediately when the user returns to the tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [fetchData]);
 
   return { ...state, refresh: fetchData };

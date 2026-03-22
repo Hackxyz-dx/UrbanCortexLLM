@@ -165,12 +165,12 @@ export default function DashboardPage() {
         </header>
 
         {/* ── Dashboard Columns Wrapper ───────────────────────────────── */}
-        <div className="flex-1 overflow-hidden p-3 md:p-4">
-          <div className="flex flex-col lg:flex-row h-full w-full gap-4 overflow-y-auto lg:overflow-hidden scrollbar-hide lg:pr-1">
+        <div className="flex-1 overflow-hidden p-3 md:p-4 min-h-0 flex flex-col">
+          <div className="flex flex-col lg:flex-row h-full w-full gap-4 overflow-hidden lg:pr-1 min-h-0">
 
             {/* ── Left Column: Incident & Recs ────────────────────────────── */}
             {leftVisible && (
-              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 lg:overflow-y-auto no-scrollbar lg:pb-4 transition-all duration-300 ${centerVisible || rightVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
+              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0 ${centerVisible || rightVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
                 {panels.incident && (
                   <section className="bg-white rounded-md shadow-sm border border-slate-200 flex flex-col flex-shrink-0">
                     <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">
@@ -202,7 +202,7 @@ export default function DashboardPage() {
 
             {/* ── Center Column: Map & Log ──────────────────────────────── */}
             {centerVisible && (
-              <main className="w-full lg:flex-1 flex flex-col gap-4 min-w-0 lg:overflow-y-auto no-scrollbar lg:pb-4 transition-all duration-300">
+              <main className="w-full lg:flex-1 flex flex-col gap-4 min-w-0 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0">
                 {panels.map && (
                   <div className="relative z-0 flex-1 min-h-[400px] rounded-md shadow-sm border border-slate-200 bg-white flex flex-col overflow-hidden">
                     <MapWidget />
@@ -218,7 +218,7 @@ export default function DashboardPage() {
 
             {/* ── Right Column: Chat & Alerts ───────────────────────────── */}
             {rightVisible && (
-              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 lg:overflow-y-auto no-scrollbar lg:pb-4 transition-all duration-300 ${centerVisible || leftVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
+              <aside className={`w-full flex-shrink-0 flex flex-col gap-4 overflow-hidden lg:pb-4 transition-all duration-300 min-h-0 ${centerVisible || leftVisible ? 'lg:w-[320px] xl:w-[400px]' : 'lg:flex-1'}`}>
                 {panels.chat && (
                   <section className="flex flex-col flex-1 min-h-[400px] bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden">
                     <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 flex-shrink-0 rounded-t-md">

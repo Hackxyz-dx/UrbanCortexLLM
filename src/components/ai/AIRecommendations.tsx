@@ -179,7 +179,7 @@ export default function AIRecommendations() {
   const completedRecs = llmRecommendations.filter(r => r.status === 'completed' || r.status === 'rejected');
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden bg-white">
+    <div className="flex flex-col flex-1 overflow-hidden bg-white min-h-0">
       {/* ── Sub-header ────────────────────────────────────────────────── */}
       <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="text-sm font-semibold text-slate-500 flex items-center gap-2">
@@ -207,141 +207,145 @@ export default function AIRecommendations() {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 w-full p-6">
-        <div className="flex flex-col gap-5 w-full max-w-full overflow-hidden">
+      <div className="flex-1 relative min-h-0">
+        <div className="absolute inset-0">
+          <ScrollArea className="h-full w-full p-6">
+            <div className="flex flex-col gap-5 w-full max-w-full overflow-hidden">
 
-          {/* ── Error ─────────────────────────────────────────────────── */}
-          {llmRecsError && (
-            <div className="border border-red-200 bg-red-50 text-red-700 rounded-lg p-4 text-sm font-medium">
-              {llmRecsError}
-            </div>
-          )}
-
-          {/* ── LLM Explanation ───────────────────────────────────────── */}
-          {!llmRecsLoading && llmExplanation && (
-            <div className="border border-slate-200 bg-white rounded-lg p-5 shadow-sm w-full">
-              <div className="flex items-center gap-2 mb-3">
-                <Info size={16} className="text-slate-400 shrink-0" />
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Operational Assessment</span>
-                {llmConfidence !== null && (
-                  <span className="ml-auto text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    {(llmConfidence * 100).toFixed(0)}% overall
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-slate-600 leading-relaxed">{llmExplanation}</p>
-              {llmCautionNote && (
-                <div className="mt-3 flex items-start gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
-                  <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                  <span className="text-xs leading-relaxed">{llmCautionNote}</span>
+              {/* ── Error ─────────────────────────────────────────────────── */}
+              {llmRecsError && (
+                <div className="border border-red-200 bg-red-50 text-red-700 rounded-lg p-4 text-sm font-medium">
+                  {llmRecsError}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* ── LLM Suggestions ───────────────────────────────────────── */}
-          {suggestedRecs.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">
-                LLM Recommendations · Pending Action
-              </h3>
-              {suggestedRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
-            </div>
-          )}
-
-          {/* ── Active / Approved LLM Recs ────────────────────────────── */}
-          {activeRecs.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-3 mb-4">
-                LLM Recommendations · Active
-              </h3>
-              {activeRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
-            </div>
-          )}
-
-          {/* ── Active Strategies (legacy)  ───────────────────────────── */}
-          {activeStrats.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">Pre-loaded Tactics · Active</h3>
-              {activeStrats.map(strat => (
-                <div key={strat.id} className="border border-emerald-200 bg-emerald-50 rounded-lg p-5 mb-4">
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-                    <h4 className="text-sm font-bold text-emerald-800 uppercase tracking-wider">{strat.name}</h4>
+              {/* ── LLM Explanation ───────────────────────────────────────── */}
+              {!llmRecsLoading && llmExplanation && (
+                <div className="border border-slate-200 bg-white rounded-lg p-5 shadow-sm w-full">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Info size={16} className="text-slate-400 shrink-0" />
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Operational Assessment</span>
+                    {llmConfidence !== null && (
+                      <span className="ml-auto text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        {(llmConfidence * 100).toFixed(0)}% overall
+                      </span>
+                    )}
                   </div>
-                  <p className="text-sm text-emerald-700/80 leading-relaxed ml-7">
-                    IoT control sequences linked to this strategy are currently engaged.
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── Pending Tactics (legacy: approve/reject) ──────────────── */}
-          {pendingStrats.length > 0 && (
-            <div>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">Pre-loaded Tactics · Pending</h3>
-              {pendingStrats.map(strat => (
-                <div key={strat.id} className="border border-slate-200 bg-white rounded-lg shadow-sm p-6 mb-5">
-                  <div className="flex flex-wrap justify-between items-start mb-5 gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="text-sm font-mono font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded border border-blue-200 shrink-0 mt-0.5">
-                        OP-{strat.rank}
-                      </div>
-                      <h4 className="text-base font-bold text-slate-800 leading-snug">{strat.name}</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">{llmExplanation}</p>
+                  {llmCautionNote && (
+                    <div className="mt-3 flex items-start gap-2 text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+                      <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                      <span className="text-xs leading-relaxed">{llmCautionNote}</span>
                     </div>
-                    <span className="font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded text-sm shrink-0">
-                      {(strat.overallConfidence * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="space-y-4 mb-6">
-                    {strat.actions.map(a => (
-                      <div key={a.id} className="bg-slate-50 p-4 rounded border border-slate-100">
-                        <div className="text-sm font-bold text-slate-700 mb-1">{a.title}</div>
-                        <div className="text-sm text-slate-600 leading-relaxed mb-2">{a.description}</div>
-                        <div className="flex gap-2 text-xs items-center bg-white border border-slate-200 px-3 py-1.5 rounded w-fit">
-                          <span className="font-bold text-slate-500 uppercase tracking-wider">Impact:</span>
-                          <span className="text-slate-700">{a.expectedImpact}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <Button
-                      size="sm"
-                      className="text-sm h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded shadow-sm"
-                      onClick={() => updateStrategyStatus(strat.id, 'approved')}
-                    >
-                      Authorize & Execute
-                    </Button>
-                  </div>
+                  )}
                 </div>
-              ))}
+              )}
+
+              {/* ── LLM Suggestions ───────────────────────────────────────── */}
+              {suggestedRecs.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">
+                    LLM Recommendations · Pending Action
+                  </h3>
+                  {suggestedRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
+                </div>
+              )}
+
+              {/* ── Active / Approved LLM Recs ────────────────────────────── */}
+              {activeRecs.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-3 mb-4">
+                    LLM Recommendations · Active
+                  </h3>
+                  {activeRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
+                </div>
+              )}
+
+              {/* ── Active Strategies (legacy)  ───────────────────────────── */}
+              {activeStrats.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">Pre-loaded Tactics · Active</h3>
+                  {activeStrats.map(strat => (
+                    <div key={strat.id} className="border border-emerald-200 bg-emerald-50 rounded-lg p-5 mb-4">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+                        <h4 className="text-sm font-bold text-emerald-800 uppercase tracking-wider">{strat.name}</h4>
+                      </div>
+                      <p className="text-sm text-emerald-700/80 leading-relaxed ml-7">
+                        IoT control sequences linked to this strategy are currently engaged.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Pending Tactics (legacy: approve/reject) ──────────────── */}
+              {pendingStrats.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-3 mb-4">Pre-loaded Tactics · Pending</h3>
+                  {pendingStrats.map(strat => (
+                    <div key={strat.id} className="border border-slate-200 bg-white rounded-lg shadow-sm p-6 mb-5">
+                      <div className="flex flex-wrap justify-between items-start mb-5 gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="text-sm font-mono font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded border border-blue-200 shrink-0 mt-0.5">
+                            OP-{strat.rank}
+                          </div>
+                          <h4 className="text-base font-bold text-slate-800 leading-snug">{strat.name}</h4>
+                        </div>
+                        <span className="font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded text-sm shrink-0">
+                          {(strat.overallConfidence * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="space-y-4 mb-6">
+                        {strat.actions.map(a => (
+                          <div key={a.id} className="bg-slate-50 p-4 rounded border border-slate-100">
+                            <div className="text-sm font-bold text-slate-700 mb-1">{a.title}</div>
+                            <div className="text-sm text-slate-600 leading-relaxed mb-2">{a.description}</div>
+                            <div className="flex gap-2 text-xs items-center bg-white border border-slate-200 px-3 py-1.5 rounded w-fit">
+                              <span className="font-bold text-slate-500 uppercase tracking-wider">Impact:</span>
+                              <span className="text-slate-700">{a.expectedImpact}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-end pt-4 border-t border-slate-100">
+                        <Button
+                          size="sm"
+                          className="text-sm h-10 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 rounded shadow-sm"
+                          onClick={() => updateStrategyStatus(strat.id, 'approved')}
+                        >
+                          Authorize & Execute
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── Completed / rejected ──────────────────────────────────── */}
+              {completedRecs.length > 0 && (
+                <details className="mt-2">
+                  <summary className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer select-none hover:text-slate-600 transition-colors">
+                    Completed / Rejected ({completedRecs.length})
+                  </summary>
+                  <div className="mt-3">
+                    {completedRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
+                  </div>
+                </details>
+              )}
+
+              {/* ── Empty state ────────────────────────────────────────────── */}
+              {!llmRecsLoading && llmRecommendations.length === 0 && !llmRecsError && (
+                <div className="text-center text-slate-400 py-12">
+                  <Info size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">Click Refresh to generate LLM recommendations.</p>
+                </div>
+              )}
+
             </div>
-          )}
-
-          {/* ── Completed / rejected ──────────────────────────────────── */}
-          {completedRecs.length > 0 && (
-            <details className="mt-2">
-              <summary className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer select-none hover:text-slate-600 transition-colors">
-                Completed / Rejected ({completedRecs.length})
-              </summary>
-              <div className="mt-3">
-                {completedRecs.map(rec => <RecommendationCard key={rec.id} rec={rec} />)}
-              </div>
-            </details>
-          )}
-
-          {/* ── Empty state ────────────────────────────────────────────── */}
-          {!llmRecsLoading && llmRecommendations.length === 0 && !llmRecsError && (
-            <div className="text-center text-slate-400 py-12">
-              <Info size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Click Refresh to generate LLM recommendations.</p>
-            </div>
-          )}
-
+          </ScrollArea>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

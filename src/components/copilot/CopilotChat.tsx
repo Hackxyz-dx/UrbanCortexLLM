@@ -31,31 +31,35 @@ export default function CopilotChat() {
   };
 
   return (
-    <div className="bg-white flex flex-col h-full w-full overflow-hidden">
-      <div className="flex-1 overflow-hidden flex flex-col relative w-full">
-        <ScrollArea className="flex-1 w-full" ref={scrollRef}>
-          <div className="flex flex-col p-5 w-full max-w-full overflow-hidden">
-            {chatMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`py-3 flex gap-3.5 text-base items-start mb-5 w-full ${
-                  msg.sender === 'user' ? '' : ''
-                }`}
-              >
-                <div className={`shrink-0 text-xs font-bold tracking-widest uppercase mt-1 border px-2 py-0.5 rounded ${msg.sender === 'user' ? 'text-slate-500 border-slate-200 bg-slate-50' : 'text-blue-700 border-blue-200 bg-blue-50'}`}>
-                  {msg.sender === 'user' ? 'OPR' : 'SYS'}
-                </div>
-                <div className={`leading-relaxed whitespace-pre-wrap break-words min-w-0 flex-1 pr-2 ${
-                  msg.isLoading ? 'text-slate-400 animate-pulse' 
-                  : msg.sender === 'user' ? 'text-slate-700 font-medium' 
-                  : 'text-slate-800 font-mono text-sm bg-slate-50/50 p-3.5 rounded-lg border border-slate-100'
-                }`}>
-                  {msg.text}
-                </div>
+    <div className="bg-white flex flex-col h-full w-full overflow-hidden min-h-0">
+      <div className="flex-1 overflow-hidden flex flex-col relative w-full min-h-0">
+        <div className="flex-1 relative min-h-0 w-full">
+          <div className="absolute inset-0">
+            <ScrollArea className="h-full w-full" ref={scrollRef}>
+              <div className="flex flex-col p-5 w-full max-w-full overflow-hidden">
+                {chatMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`py-3 flex gap-3.5 text-base items-start mb-5 w-full ${
+                      msg.sender === 'user' ? '' : ''
+                    }`}
+                  >
+                    <div className={`shrink-0 text-xs font-bold tracking-widest uppercase mt-1 border px-2 py-0.5 rounded ${msg.sender === 'user' ? 'text-slate-500 border-slate-200 bg-slate-50' : 'text-blue-700 border-blue-200 bg-blue-50'}`}>
+                      {msg.sender === 'user' ? 'OPR' : 'SYS'}
+                    </div>
+                    <div className={`leading-relaxed whitespace-pre-wrap break-words min-w-0 flex-1 pr-2 ${
+                      msg.isLoading ? 'text-slate-400 animate-pulse' 
+                      : msg.sender === 'user' ? 'text-slate-700 font-medium' 
+                      : 'text-slate-800 font-mono text-sm bg-slate-50/50 p-3.5 rounded-lg border border-slate-100'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="p-5 border-t border-slate-100 bg-slate-50 w-full shrink-0">
           <div className="flex flex-wrap gap-2.5 mb-4 w-full">

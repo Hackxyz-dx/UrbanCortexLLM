@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { useSimulationStore } from '@/lib/store';
 import { useMapData } from '@/hooks/useMapData';
 import L from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { AlternateRoute } from '@/types/maps';
 
 // ─── Leaflet icon fix ─────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ export default function MapViewer() {
   const isStratApproved = storeIncident.strategies.find(s => s.id === 'strat-1')?.status === 'approved';
 
   // Live data from backend (incidents + A* routes)
-  const { incidents, routes, isLoading, error } = useMapData();
+  const { incidents, routes, isLoading, error, fetchedAt } = useMapData();
 
   // Prefer the first fetched incident for the map center; fall back to store location
   const primaryIncident = incidents[0];
@@ -62,6 +62,16 @@ export default function MapViewer() {
 
   // Store routes (from mockIncident.ts) are shown when backend routes are absent
   const hasBackendRoutes = routes.length > 0;
+
+  // "Last updated X sec ago" — ticks every second so operators can see data is live
+  const [secondsSince, setSecondsSince] = useState<number | null>(null);
+  useEffect(() => {
+    if (!fetchedAt) { setSecondsSince(null); return; }
+    const tick = () => setSecondsSince(Math.floor((Date.now() - new Date(fetchedAt).getTime()) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [fetchedAt]);
 
   return (
     <MapContainer
@@ -195,6 +205,17 @@ export default function MapViewer() {
         <div className="absolute top-5 right-5 z-[1000] bg-red-50/95 backdrop-blur-sm border border-red-200 text-red-700 text-xs font-bold px-5 py-3 rounded shadow-sm uppercase tracking-widest flex items-center gap-2.5">
           <div className="w-2 h-2 bg-red-500 rounded-full" />
           {error}
+        </div>
+      )}
+
+      {/* ── Freshness badge (shown when not loading and no error) ─────────── */}
+      {!isLoading && !error && secondsSince !== null && (
+        <div className="absolute bottom-5 right-5 z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-500 text-xs px-4 py-2 rounded shadow-sm flex items-center gap-2">
+          <div className={`w-1.5 h-1.5 rounded-full ${secondsSince < 60 ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+          {secondsSince < 5
+            ? <span className="font-semibold text-emerald-600">✓ Live</span>
+            : <span>Updated <span className="font-semibold text-slate-700">{secondsSince}s</span> ago</span>
+          }
         </div>
       )}
     </MapContainer>

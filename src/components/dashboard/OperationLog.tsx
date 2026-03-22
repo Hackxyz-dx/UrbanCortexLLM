@@ -20,7 +20,7 @@ export default function OperationLog() {
   const timeline = useSimulationStore(state => state.incident.timeline);
 
   return (
-    <div className="flex flex-col h-full bg-white flex-1 overflow-hidden">
+    <div className="flex flex-col h-full bg-white flex-1 overflow-hidden min-h-0">
       <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center h-14 shrink-0">
         <h2 className="text-sm font-bold tracking-widest text-slate-600 uppercase flex items-center gap-2">
           <Clock size={16} className="text-slate-400" />
@@ -28,19 +28,23 @@ export default function OperationLog() {
           <span className="ml-auto font-mono text-slate-500 text-xs">{timeline.length} events</span>
         </h2>
       </div>
-      <ScrollArea className="flex-1 w-full bg-slate-50">
-        <div className="flex flex-col-reverse p-3">
-          {[...timeline].reverse().map(event => (
-            <div key={event.id} className="flex items-start gap-3.5 px-5 py-4 border-b border-slate-100/50 text-base bg-white mb-2 rounded shadow-sm border border-slate-200 hover:border-slate-300 transition-colors">
-              {eventIcon(event.type)}
-              <div className="min-w-0 flex-1">
-                <span className="text-slate-800 leading-relaxed break-words font-medium">{event.message}</span>
-              </div>
-              <span className="text-xs font-mono font-bold text-slate-500 shrink-0 mt-0.5 bg-slate-100 px-2.5 py-1 rounded">{event.timestamp}</span>
+      <div className="flex-1 relative min-h-0">
+        <div className="absolute inset-0">
+          <ScrollArea className="h-full w-full bg-slate-50">
+            <div className="flex flex-col-reverse p-3">
+              {[...timeline].reverse().map(event => (
+                <div key={event.id} className="flex items-start gap-3.5 px-5 py-4 border-b border-slate-100/50 text-base bg-white mb-2 rounded shadow-sm border border-slate-200 hover:border-slate-300 transition-colors">
+                  {eventIcon(event.type)}
+                  <div className="min-w-0 flex-1">
+                    <span className="text-slate-800 leading-relaxed break-words font-medium">{event.message}</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-500 shrink-0 mt-0.5 bg-slate-100 px-2.5 py-1 rounded">{event.timestamp}</span>
+                </div>
+              ))}
             </div>
-          ))}
+          </ScrollArea>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
