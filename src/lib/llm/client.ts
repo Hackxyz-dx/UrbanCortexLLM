@@ -4,15 +4,21 @@
  * Wraps the active LLMProvider with timeout enforcement, one-retry logic,
  * and structured error surfacing. Callers (recommendations, chat, alerts)
  * never deal with the raw provider directly.
+ *
+ * Quota/rate-limit errors (429) are NOT retried — they are re-thrown as
+ * LLMQuotaError so the caller can immediately fall back to the mock provider.
  */
 
-import { getLLMProvider } from './provider';
+import { getLLMProvider, getMockProvider, LLMQuotaError } from './provider';
 import type { LLMRequest, LLMRawResponse } from '@/types/llm';
 
 const TIMEOUT_MS = 20_000;  // 20-second hard limit per LLM call
 const MAX_RETRIES = 1;
 
-/** Call the active LLM provider with one automatic retry on failure. */
+// Re-export so callers only need one import from this module.
+export { LLMQuotaError, getMockProvider } from './provider';
+
+/** Call the active LLM provider with one automatic retry on non-quota failures. */
 export async function callLLM(request: LLMRequest): Promise<LLMRawResponse> {
   const provider = getLLMProvider();
 
@@ -24,6 +30,14 @@ export async function callLLM(request: LLMRequest): Promise<LLMRawResponse> {
       return result;
     } catch (err) {
       lastError = err;
+
+      // Quota errors must NOT be retried — they will not resolve and each
+      // retry burns more of the depleted quota. Re-throw immediately.
+      if (err instanceof LLMQuotaError) {
+        console.warn('[LLM client] Quota/rate-limit hit — skipping retry, caller should use mock fallback.');
+        throw err;
+      }
+
       if (attempt < MAX_RETRIES) {
         console.warn(`[LLM client] Attempt ${attempt + 1} failed, retrying…`, err);
         await sleep(500);

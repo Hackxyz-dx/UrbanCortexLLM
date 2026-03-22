@@ -9,6 +9,28 @@
 import type { LLMRequest, LLMRawResponse, LLMProviderName } from '@/types/llm';
 import { env } from '@/lib/config/env';
 
+// ─── Error types ──────────────────────────────────────────────────────────────
+
+/**
+ * Thrown when the Gemini API returns 429 (quota/rate-limit exhausted).
+ * Callers should catch this and serve the mock fallback immediately —
+ * retrying will only consume more of the depleted quota.
+ */
+export class LLMQuotaError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'LLMQuotaError';
+  }
+}
+
+/** Thrown for non-quota Gemini API errors (4xx/5xx other than 429). */
+export class LLMCallError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'LLMCallError';
+  }
+}
+
 // ─── Provider interface ────────────────────────────────────────────────────────
 
 export interface LLMProvider {
@@ -31,24 +53,43 @@ class GeminiProvider implements LLMProvider {
   async complete(request: LLMRequest): Promise<LLMRawResponse> {
     const start = Date.now();
 
-    // Dynamic import to keep edge-runtime safe if ever needed
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(this.apiKey);
+    try {
+      // Dynamic import to keep edge-runtime safe if ever needed
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(this.apiKey);
 
-    const model = genAI.getGenerativeModel({
-      model: this.model,
-      systemInstruction: request.systemPrompt,
-      generationConfig: {
-        maxOutputTokens: request.maxOutputTokens ?? 1024,
-        temperature: 0.2,        // low temp for deterministic, operational output
-        responseMimeType: 'application/json',
-      },
-    });
+      const model = genAI.getGenerativeModel({
+        model: this.model,
+        systemInstruction: request.systemPrompt,
+        generationConfig: {
+          maxOutputTokens: request.maxOutputTokens ?? 1024,
+          temperature: 0.2,        // low temp for deterministic, operational output
+          responseMimeType: 'application/json',
+        },
+      });
 
-    const result = await model.generateContent(request.userPrompt);
-    const text = result.response.text();
+      const result = await model.generateContent(request.userPrompt);
+      const text = result.response.text();
 
-    return { text, provider: 'gemini', durationMs: Date.now() - start };
+      return { text, provider: 'gemini', durationMs: Date.now() - start };
+    } catch (err) {
+      // The @google/generative-ai SDK attaches `status` to API errors.
+      const status = (err as Record<string, unknown>)?.status as number | undefined;
+      const httpStatus = (err as Record<string, unknown>)?.httpStatus as number | undefined;
+      const code = status ?? httpStatus;
+
+      if (code === 429) {
+        console.warn(
+          `[LLM] Gemini quota/rate-limit hit (429). ` +
+          `Throwing LLMQuotaError — callers will switch to mock. ` +
+          `Elapsed: ${Date.now() - start}ms`,
+        );
+        throw new LLMQuotaError('Gemini API quota exceeded (429).', err);
+      }
+
+      console.error(`[LLM] Gemini API error (status=${code ?? 'unknown'}):`, err);
+      throw new LLMCallError(`Gemini API call failed (status=${code ?? 'unknown'}).`, err);
+    }
   }
 }
 
@@ -175,14 +216,25 @@ export function getLLMProvider(): LLMProvider {
   if (_instance) return _instance;
 
   const apiKey = env.gemini.apiKey;
+  const model = env.gemini.model;
 
   if (apiKey) {
+    console.info(`[LLM] Key loaded — provider=gemini model=${model}`);
     _instance = new GeminiProvider(apiKey);
   } else {
     // No key — safe mock fallback. Set GEMINI_API_KEY in .env.local to enable real AI.
-    console.warn('[LLM] GEMINI_API_KEY not set. Using mock LLM provider.');
+    console.warn('[LLM] GEMINI_API_KEY not set — using mock LLM provider (no real AI).');
     _instance = new MockLLMProvider();
   }
 
   return _instance;
+}
+
+/**
+ * Returns a fresh MockLLMProvider instance.
+ * Use this as an in-request fallback when the real provider hits a quota error —
+ * do NOT reset the singleton so that caching behaviour is preserved across requests.
+ */
+export function getMockProvider(): LLMProvider {
+  return new MockLLMProvider();
 }
