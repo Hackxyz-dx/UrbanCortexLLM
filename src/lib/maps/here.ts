@@ -1,19 +1,26 @@
 /**
  * HERE Maps & Traffic provider implementation.
  * Uses HERE Routing v8 and HERE Traffic v6.3 APIs.
- * Requires HERE_API_KEY in environment variables.
+ *
+ * @deprecated HERE is a paid provider and is NO LONGER used by this app.
+ * The active provider is selected in src/lib/maps/index.ts (ors | graphhopper | mock).
+ * This file is kept only as an implementation reference.
  */
 
 import type { MapProvider, BoundingBox } from './provider';
 import type { TrafficIncident, AlternateRoute, RoadSegment, GeoCoord } from '@/types/maps';
-import { env } from '@/lib/config/env';
 import { normalizeIncident } from '@/lib/incidents/service';
+
+// HERE has been removed from env.ts — read directly from process.env as a legacy fallback.
+const HERE_API_KEY = process.env.HERE_API_KEY ?? '';
+const HERE_TRAFFIC_BASE_URL = process.env.HERE_TRAFFIC_BASE_URL ?? 'https://traffic.ls.hereapi.com/traffic/6.3';
+const HERE_ROUTING_BASE_URL = process.env.HERE_ROUTING_BASE_URL ?? 'https://router.hereapi.com/v8';
 
 export class HereProvider implements MapProvider {
   readonly name = 'HERE';
 
   private get apiKey() {
-    return env.here.apiKey;
+    return HERE_API_KEY;
   }
 
   /** Fetch incidents via HERE Traffic incidents endpoint */
@@ -22,7 +29,7 @@ export class HereProvider implements MapProvider {
       console.warn('[HereProvider] No API key configured. Returning empty incidents.');
       return [];
     }
-    const url = new URL(`${env.here.trafficBaseUrl}/incidents.json`);
+    const url = new URL(`${HERE_TRAFFIC_BASE_URL}/incidents.json`);
     url.searchParams.set('apiKey', this.apiKey);
     url.searchParams.set('prox', `${center.lat},${center.lng},${radiusMeters}`);
     url.searchParams.set('criticality', '0,1,2,3');
@@ -39,7 +46,7 @@ export class HereProvider implements MapProvider {
     if (!this.apiKey) return [];
 
     const bbox = `${bounds.south},${bounds.west};${bounds.north},${bounds.east}`;
-    const url = new URL(`${env.here.trafficBaseUrl}/flow.json`);
+    const url = new URL(`${HERE_TRAFFIC_BASE_URL}/flow.json`);
     url.searchParams.set('apiKey', this.apiKey);
     url.searchParams.set('bbox', bbox);
 
@@ -57,7 +64,7 @@ export class HereProvider implements MapProvider {
   ): Promise<AlternateRoute[]> {
     if (!this.apiKey) return [];
 
-    const url = new URL(`${env.here.routingBaseUrl}/routes`);
+    const url = new URL(`${HERE_ROUTING_BASE_URL}/routes`);
     url.searchParams.set('apiKey', this.apiKey);
     url.searchParams.set('origin', `${origin.lat},${origin.lng}`);
     url.searchParams.set('destination', `${destination.lat},${destination.lng}`);

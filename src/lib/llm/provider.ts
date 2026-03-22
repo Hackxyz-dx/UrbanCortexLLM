@@ -7,6 +7,7 @@
  */
 
 import type { LLMRequest, LLMRawResponse, LLMProviderName } from '@/types/llm';
+import { env } from '@/lib/config/env';
 
 // ─── Provider interface ────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ class GeminiProvider implements LLMProvider {
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
-    this.model = process.env.LLM_MODEL ?? 'gemini-2.0-flash';
+    this.model = env.gemini.model;
   }
 
   async complete(request: LLMRequest): Promise<LLMRawResponse> {
@@ -173,15 +174,12 @@ let _instance: LLMProvider | null = null;
 export function getLLMProvider(): LLMProvider {
   if (_instance) return _instance;
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  const forced = process.env.LLM_PROVIDER as LLMProviderName | undefined;
+  const apiKey = env.gemini.apiKey;
 
-  if (forced === 'mock' || (!apiKey && forced !== 'gemini')) {
-    _instance = new MockLLMProvider();
-  } else if (apiKey) {
+  if (apiKey) {
     _instance = new GeminiProvider(apiKey);
   } else {
-    // No key, no forced provider — safe mock fallback
+    // No key — safe mock fallback. Set GEMINI_API_KEY in .env.local to enable real AI.
     console.warn('[LLM] GEMINI_API_KEY not set. Using mock LLM provider.');
     _instance = new MockLLMProvider();
   }
